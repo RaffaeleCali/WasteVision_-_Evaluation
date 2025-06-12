@@ -1,0 +1,103 @@
+.info-container {
+    background-color: var(--shadow-color);
+    color: var(--text-dark);
+    padding: 2rem 1rem; /* 🔁 da 2rem a 1rem a sinistra/destra */
+    padding-top: 10vh;
+    display: flex;
+    justify-content: space-around;
+    height: auto;
+    box-sizing: border-box;
+  
+}
+.main-section {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    gap: 2rem;
+    box-shadow: 0 0 10px rgba(var(--border-color), 0.1);
+}
+  
+
+.left-pane, .right-pane {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+.left-pane{
+    border: 1px solid var(--accent-hover);
+    border-radius: 10px;
+    
+}
+
+
+.vertical-divider {
+    width: 1px;
+    background-color: var(--accent-hover);
+}
+
+.config-ok {
+    border: 3px solid green;
+    border-radius: 12px;
+}
+
+.config-missing {
+    border: 3px solid red;
+    border-radius: 12px;
+}
+
+.config-json {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 1rem;
+}
+
+.config-alert {
+    color: red;
+    margin-bottom: 1rem;
+}
+.config-status {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    white-space: pre-wrap;       /* 🔥 Va a capo dove necessario */
+    word-break: break-word;      /* 🔥 Evita overflow */
+    overflow-wrap: break-word;
+
+}
+@media (max-width: 767px) {
+    .info-container {
+      flex-direction: column;
+      align-items: stretch;
+     
+      padding: 1rem;
+      padding-top: 10vh;
+    }
+  
+    .main-section {
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 100%;
+    }
+  
+    .left-pane,
+    .right-pane {
+      padding: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  
+    .upload-response {
+      width: 100% !important;
+      font-size: 1rem !important;
+    }
+  
+    .config-status {
+      font-size: 0.95rem;
+    }
+}
+  
+

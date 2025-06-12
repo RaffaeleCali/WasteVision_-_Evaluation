@@ -1,0 +1,49 @@
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .topbar {
+    background-color: #333;
+    color: white;
+    padding: 1rem;
+  }
+  
+  .main-layout {
+    display: flex;
+    flex: 1;
+  }
+  
+  .sidebar {
+    width: 200px;
+    background-color: #eee;
+    padding: 1rem;
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .sidebar li.active {
+    background-color: #ccc;
+    font-weight: bold;
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 1rem;
+  }
+  
+  .chunk {
+    border: 2px solid;
+    padding: 10px;
+    margin: 1rem 0;
+  }
+  

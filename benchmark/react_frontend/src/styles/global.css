@@ -1,0 +1,51 @@
+:root {
+  /* Colori principali */
+  --background-light: #FFF0DC; /* Sfondi chiari */
+  --accent-color: #F0BB78;     /* Colore per accenti e pulsanti */
+  --text-dark: #e0e1dd;        /* Testo secondario o importante */
+  --text-primary: #778da9;     /* Testo principale */
+
+  /* Varianti e utilità */
+  --accent-hover: #415a77;     /* Hover per pulsanti o accenti */
+  --border-color: #1b263b;     /* Colore per bordi */
+  --shadow-color: #0d1b2a; /* Ombre leggere */
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--shadow-color);
+  }
+  
+  .product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--background-light);
+  }
+  
+  .product-card {
+    flex: 1 1 calc(33.333% - 16px);
+    box-sizing: border-box;
+  }
+  
+  @media (max-width: 768px) {
+    .product-card {
+      flex: 1 1 calc(50% - 16px);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .product-card {
+      flex: 1 1 100%;
+    }
+  }
+  

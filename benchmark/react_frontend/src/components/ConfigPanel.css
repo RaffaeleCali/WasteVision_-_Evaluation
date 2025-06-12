@@ -1,0 +1,48 @@
+.config-panel-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    }
+  
+.form-field {
+    margin-bottom: 1rem;
+}
+  
+.title {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+  
+.save-button {
+    align-self: flex-start;
+}
+/* Applica colore scuro coerente anche in hover/focus */
+.MuiOutlinedInput-root {
+    color: var(--text-dark);
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: var(--text-dark);
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--text-dark);
+}
+
+.MuiInputLabel-root {
+    color: var(--text-dark);
+}
+
+.MuiInputLabel-root.Mui-focused {
+    color: var(--text-dark);
+}
+textarea.MuiInputBase-input {
+    font-family: monospace;
+    font-size: 0.95rem;
+    white-space: pre-wrap;       /* 🔥 Va a capo dove necessario */
+    word-break: break-word;      /* 🔥 Evita overflow */
+    overflow-wrap: break-word;   /* 🔥 Compatibilità aggiuntiva */
+    line-height: 1.4;
+}
+  

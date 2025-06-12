@@ -1,0 +1,146 @@
+.header {
+    position: fixed;
+    width: 100vw;
+    z-index: 100;
+    height: 8vh;
+    background-color:var(--border-color);
+}
+
+/* Header per Mobile */
+.header.mobile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 8vh;
+}
+
+.header.mobile .top-bar {
+    height: 8vh;
+   /* background-color: var(--text-primary);*/
+    color: var(--background-light);;
+    padding: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.header.mobile .logo {
+    font-size: 1.2rem;
+    color: var(--background-light);
+    margin-left: 10px;
+    margin-left: 20vw;
+    
+}
+.link{
+    text-decoration: none;
+}
+.header.mobile .menu-icon {
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: var(--background-light);
+    cursor: pointer;
+}
+
+.header.mobile .bottom-bar {
+    background-color: var(--border-color);
+    color: var(--background-light);
+    align-items: center;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 8vh;
+}
+
+.header.mobile .bottom-icon {
+    color: var(--background-light);
+    text-decoration: none;
+}
+
+/* Header per PC */
+.header.pc {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 6vw;
+    background-color: var(--border-color);
+    color: var(--background-light);
+    border-bottom: var(--accent-hover) solid 2px;
+}
+
+.header.pc .sidebar {
+    display: flex;
+    flex-direction: row;
+}
+
+.header.pc .sidebar-link {
+    color: var(--background-light);
+    text-decoration: none;
+}
+
+.header.pc .top-bar {
+    text-align: center;
+    padding-left: 10vw;
+}
+
+.header.pc .logo {
+    font-size: 1.5rem;
+    color: var(--background-light);
+    text-decoration: none;
+}
+
+.header.pc .buttun {
+    display: flex;
+    width: 25vw;
+    gap: 4vw;
+    padding-left: 30vw;
+    justify-content: flex-end;
+    font-size: 1.5rem;
+}
+
+/* Sidebar per Mobile */
+.mobile-sidebar {
+    position: fixed;
+    top: 9vh;
+    left: 0;
+    bottom: 8vh;
+    width: 35vw;
+    height: 100%;
+    background-color:var(--border-color);
+    color: var(--background-light);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.mobile-sidebar a {
+    color: var(--background-light);
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+/* Media Queries */
+@media (min-width: 768px) {
+    .header.mobile {
+        display: none;
+    }
+
+    .header.pc {
+        display: flex;
+    }
+}
+
+@media (max-width: 767px) {
+    .header.pc {
+        display: none;
+    }
+
+    .header.mobile {
+        display: flex;
+    }
+}
