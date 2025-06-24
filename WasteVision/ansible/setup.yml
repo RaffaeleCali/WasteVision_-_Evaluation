@@ -54,35 +54,35 @@
     #  Project checkout
     # -------------------------------------------------
     
-    # -------------------------------------------------
-    #  Minikube installation (if missing)
-    # -------------------------------------------------
-    - name: Install kubectl if Minikube not found
-      shell: |
-        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x ./kubectl
-        sudo mv ./kubectl /usr/local/bin/kubectl
-      when: minikube_cli.rc != 0
-      become: true
+# -------------------------------------------------
+#  Minikube installation (if missing)
+# -------------------------------------------------
+    - name: Check if Minikube is installed
+      command: which minikube
+      register: minikube_cli
+      ignore_errors: true
+      become: false
 
-    - name: Install Docker if Minikube not found
-      shell: |
-        sudo yum update -y
-        sudo yum install -y docker
-        sudo systemctl start docker
-        sudo systemctl enable docker
-        sudo usermod -aG docker ec2-user
-      when: minikube_cli.rc != 0
-      become: true
+    - block:
+        - name: Install kubectl
+          shell: |
+            curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/kubectl
 
-    - name: Install Minikube
-      shell: |
-        curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        chmod +x minikube
-        sudo mv minikube /usr/local/bin/minikube
-      when: minikube_cli.rc != 0
-      become: true
+        - name: Install Docker
+          shell: |
+            yum update -y
+            yum install -y docker
+            systemctl enable --now docker
+            usermod -aG docker ec2-user
 
+        - name: Install Minikube
+          shell: |
+            curl -Lo /usr/local/bin/minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+            chmod +x /usr/local/bin/minikube
+      become: true
+      when: minikube_cli.rc != 0     # esegue il blocco solo se Minikube manca
     # -------------------------------------------------
     #  Ensure Minikube is stopped & cleaned (fresh cluster)
     # -------------------------------------------------
