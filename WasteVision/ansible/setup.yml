@@ -102,7 +102,7 @@
         --addons=ingress
     args:
       executable: /bin/bash
-    become: false
+    become: true
 
   # -------------------------------------------------
   #  Applicazione manifest Kubernetes
