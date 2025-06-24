@@ -106,7 +106,7 @@
     # -------------------------------------------------
     - name: Apply only the namespace manifest
       shell: |
-        kubectl apply -f {{ manifests_dir }}/namespace.yaml
+        kubectl apply -f WasteVision/{{ manifests_dir }}/namespace.yaml
       args:
         executable: /bin/bash
       become: false
@@ -125,7 +125,7 @@
 
     - name: Apply remaining manifests
       shell: |
-        find {{ manifests_dir }} -type f ! -name 'namespace.yaml' -exec kubectl apply -f {} \;
+        find WasteVision/{{ manifests_dir }} -type f ! -name 'namespace.yaml' -exec kubectl apply -f {} \;
       args:
         executable: /bin/bash
       become: false
