@@ -1,0 +1,179 @@
+# =====================================================
+#  Playbook: deploy.yml
+#  Scope   : Provision a fresh EC2 host, install/upgrade Minikube,
+#            clone the private repo, apply Kubernetes manifests,
+#            and expose selected services via port‑forward.
+#            Requires:
+#              • SSH key (SECRET_SSH_KEY) for the host (handled by GH Actions)
+#              • GH_PAT env var with a Personal Access Token (scope: repo)
+# =====================================================
+
+- name: Deploy SistemiCloud on EC2 Minikube
+  hosts: productEC2
+  become: true
+  vars:
+    project_dir: /home/ec2-user/SistemiCloud
+    repo_url: "https://{{ lookup('env', 'GH_PAT') }}@github.com/RaffaeleCali/WasteVision_-_Evaluation.git" 
+    repo_branch: main
+    manifests_dir: "{{ project_dir }}/deployment"
+    port_forward_specs:
+      - svc: ollama
+        local: 11434
+        remote: 11434
+      - svc: server
+        local: 5000
+        remote: 5000
+      - svc: react-frontend
+        local: 80
+        remote: 80
+      - svc: jaeger
+        local: 31661
+        remote: 16686
+
+  tasks:
+
+    - name: Ensure Git is installed
+      package:
+        name: git
+        state: present
+
+    - name: Ensure Docker group exists & ec2-user in it
+      group:
+        name: docker
+        state: present
+      register: docker_group
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: true
+      when: docker_group.changed
+
+    # -------------------------------------------------
+    #  Project checkout
+    # -------------------------------------------------
+    - name: Clean previous project directory (if any)
+      file:
+        path: "{{ project_dir }}"
+        state: absent
+
+    - name: Clone private repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ project_dir }}"
+        version: "{{ repo_branch }}"
+        force: yes
+      environment:
+        GIT_TERMINAL_PROMPT: "0"   # no interactive prompt
+
+    - name: Ensure ec2-user owns the project directory
+      file:
+        path: "{{ project_dir }}"
+        owner: ec2-user
+        group: ec2-user
+        recurse: yes
+
+    # -------------------------------------------------
+    #  Minikube installation (if missing)
+    # -------------------------------------------------
+    - name: Check if Minikube is installed
+      command: which minikube
+      register: minikube_cli
+      ignore_errors: yes
+      become: false
+
+    - name: Run bootstrap script when Minikube is absent
+      shell: |
+        bash {{ project_dir }}/run2.sh 2>&1 | tee {{ project_dir }}/run2.log
+      args:
+        executable: /bin/bash
+      when: minikube_cli.rc != 0
+      become: true
+
+    # -------------------------------------------------
+    #  Ensure Minikube is stopped & cleaned (fresh cluster)
+    # -------------------------------------------------
+    - name: Stop Minikube if running
+      shell: minikube stop || true
+      become: false
+      when: minikube_cli.rc == 0
+      ignore_errors: yes
+
+    - name: Delete Minikube if existing
+      shell: minikube delete || true
+      become: false
+      when: minikube_cli.rc == 0
+      ignore_errors: yes
+
+    # -------------------------------------------------
+    #  Start Minikube (Docker driver, GPU optional)
+    # -------------------------------------------------
+    - name: Start Minikube (Docker driver)
+      shell: |
+        minikube start \
+          --driver=docker \
+          --memory=6192mb \
+          --cpus=2 \
+          --container-runtime=containerd \
+          --addons=ingress
+      args:
+        executable: /bin/bash
+      become: false
+
+    # -------------------------------------------------
+    #  Apply Kubernetes manifests
+    # -------------------------------------------------
+    - name: Apply only the namespace manifest
+      shell: |
+        kubectl apply -f {{ manifests_dir }}/namespace.yaml
+      args:
+        executable: /bin/bash
+      become: false
+
+    - name: Wait for namespace to exist
+      shell: |
+        for i in {1..10}; do
+          kubectl get ns myproject && exit 0
+          sleep 2
+        done
+        echo "Namespace not found" >&2
+        exit 1
+      args:
+        executable: /bin/bash
+      become: false
+
+    - name: Apply remaining manifests
+      shell: |
+        find {{ manifests_dir }} -type f ! -name 'namespace.yaml' -exec kubectl apply -f {} \;
+      args:
+        executable: /bin/bash
+      become: false
+
+
+    - name: Wait until all pods are Running
+      shell: |
+        set -euo pipefail
+        echo "Waiting for pods…";
+        kubectl wait --for=condition=Ready pods --all -n myproject --timeout=180s
+      args:
+        executable: /bin/bash
+      become: false
+
+    # -------------------------------------------------
+    #  Port‑forward selected services (background)
+    # -------------------------------------------------
+    - name: Port‑forward services in background
+      shell: |
+        nohup kubectl port-forward svc/{{ item.svc }} {{ item.local }}:{{ item.remote }} --address 0.0.0.0 >/dev/null 2>&1 &
+      loop: "{{ port_forward_specs }}"
+      loop_control:
+        label: "svc {{ item.svc }}"
+      become: false
+
+    - name: Show forwarded services
+      debug:
+        msg: "Forwarded {{ item.local }}→{{ item.remote }} for {{ item.svc }}"
+      loop: "{{ port_forward_specs }}"
+      loop_control:
+        label: "svc {{ item.svc }}"
