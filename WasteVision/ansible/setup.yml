@@ -9,10 +9,10 @@
   become: true
 
   vars:
-    project_dir: /home/ec2-user/WasteVision_-_Evaluation/WasteVision
+    project_dir: /home/ec2-user/WasteVision_-_Evaluation
     repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git"
     repo_branch: main
-    manifests_dir: "{{ project_dir }}/deployment"
+    manifests_dir: "{{ project_dir }}/WasteVision/deployment"
 
   tasks:
   # -------------------------------------------------
