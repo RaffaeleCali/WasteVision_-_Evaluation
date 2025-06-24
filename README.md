@@ -6,6 +6,7 @@
 
 ## 🧠 Project Goals
 
+
 - Estimate food waste from plate images using a consistent formula.
 - Allow users to configure and switch between different VLM providers.
 - Provide both web and mobile-compatible interfaces.
