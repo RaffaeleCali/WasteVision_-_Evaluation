@@ -1,155 +1,152 @@
 # =====================================================
-#  Playbook: deploy.yml
-#  Scope   : Provision a fresh EC2 host, install/upgrade Minikube,
-#            clone the private repo, apply Kubernetes manifests,
-#            and expose selected services via port‑forward.
-#            Requires:
-#              • SSH key (SECRET_SSH_KEY) for the host (handled by GH Actions)
-#              • GH_PAT env var with a Personal Access Token (scope: repo)
+# Playbook: deploy.yml
+# Scope   : Provision EC2 host, install/upgrade Minikube,
+#           clone repo, apply Kubernetes manifests.
 # =====================================================
 
 - name: Deploy WasteVision_-_Evaluation on EC2 Minikube
   hosts: productEC2
   become: true
+
   vars:
     project_dir: /home/ec2-user/WasteVision_-_Evaluation/WasteVision
-    repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git" 
+    repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git"
     repo_branch: main
     manifests_dir: "{{ project_dir }}/deployment"
-    port_forward_specs:
-      - svc: ollama
-        local: 11434
-        remote: 11434
-      - svc: server
-        local: 5000
-        remote: 5000
-      - svc: react-frontend
-        local: 80
-        remote: 80
-      - svc: jaeger
-        local: 31661
-        remote: 16686
 
   tasks:
+  # -------------------------------------------------
+  #  Pacchetti di base
+  # -------------------------------------------------
+  - name: Ensure Git is installed
+    package:
+      name: git
+      state: present
 
-    - name: Ensure Git is installed
-      package:
-        name: git
-        state: present
+  - name: Ensure Docker group exists
+    group:
+      name: docker
+      state: present
+    register: docker_group
 
-    - name: Ensure Docker group exists & ec2-user in it
-      group:
-        name: docker
-        state: present
-      register: docker_group
+  - name: Add ec2-user to docker group
+    user:
+      name: ec2-user
+      groups: docker
+      append: true
+    when: docker_group.changed
 
-    - name: Add ec2-user to docker group
-      user:
-        name: ec2-user
-        groups: docker
-        append: true
-      when: docker_group.changed
+  # -------------------------------------------------
+  #  Checkout del progetto
+  # -------------------------------------------------
+  - name: Clone (o aggiorna) il repository
+    git:
+      repo: "{{ repo_url }}"
+      dest: "{{ project_dir }}"
+      version: "{{ repo_branch }}"
+      force: true          # fa pull se la dir esiste
+    become: false
 
-    # -------------------------------------------------
-    #  Project checkout
-    # -------------------------------------------------
-    
-# -------------------------------------------------
-#  Minikube installation (if missing)
-# -------------------------------------------------
-    - name: Check if Minikube is installed
-      command: which minikube
-      register: minikube_cli
-      ignore_errors: true
-      become: false
+  # -------------------------------------------------
+  #  Installazione Minikube/kubectl/docker se mancano
+  # -------------------------------------------------
+  - name: Verifica presenza Minikube
+    command: which minikube
+    register: minikube_cli
+    ignore_errors: true
+    become: false
 
-    - block:
-        - name: Install kubectl
-          shell: |
-            curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-            chmod +x kubectl
-            mv kubectl /usr/local/bin/kubectl
+  - block:
+      - name: Installa kubectl
+        shell: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
 
-        - name: Install Docker
-          shell: |
-            yum update -y
-            yum install -y docker
-            systemctl enable --now docker
-            usermod -aG docker ec2-user
+      - name: Installa Docker
+        shell: |
+          yum update -y
+          yum install -y docker
+          systemctl enable --now docker
+          usermod -aG docker ec2-user
 
-        - name: Install Minikube
-          shell: |
-            curl -Lo /usr/local/bin/minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-            chmod +x /usr/local/bin/minikube
-      become: true
-      when: minikube_cli.rc != 0     # esegue il blocco solo se Minikube manca
-    # -------------------------------------------------
-    #  Ensure Minikube is stopped & cleaned (fresh cluster)
-    # -------------------------------------------------
-    - name: Stop Minikube if running
-      shell: minikube stop || true
-      become: false
-      when: minikube_cli.rc == 0
-      ignore_errors: yes
+      - name: Installa Minikube
+        shell: |
+          curl -Lo /usr/local/bin/minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x /usr/local/bin/minikube
+    when: minikube_cli.rc != 0
+    become: true
 
-    - name: Delete Minikube if existing
-      shell: minikube delete || true
-      become: false
-      when: minikube_cli.rc == 0
-      ignore_errors: yes
+  # -------------------------------------------------
+  #  (Ri)avvio cluster Minikube
+  # -------------------------------------------------
+  - name: Arresta Minikube (se in esecuzione)
+    shell: minikube stop || true
+    when: minikube_cli.rc == 0
+    ignore_errors: true
+    become: false
 
-    # -------------------------------------------------
-    #  Start Minikube (Docker driver, GPU optional)
-    # -------------------------------------------------
-    - name: Start Minikube (Docker driver)
-      shell: |
-        minikube start \
-          --driver=docker \
-          --memory=2827mb \
-          --cpus=2 \
-          --container-runtime=containerd \
-          --addons=ingress
-      args:
-        executable: /bin/bash
-      become: false
+  - name: Elimina Minikube (se esiste)
+    shell: minikube delete || true
+    when: minikube_cli.rc == 0
+    ignore_errors: true
+    become: false
 
-    # -------------------------------------------------
-    #  Apply Kubernetes manifests
-    # -------------------------------------------------
-    - name: Apply only the namespace manifest
-      shell: |
-        kubectl apply -f {{ manifests_dir }}/namespace.yaml
-      args:
-        executable: /bin/bash
-      become: false
+  - name: Avvia Minikube con driver Docker
+    shell: |
+      minikube start \
+        --driver=docker \
+        --memory=2827mb \
+        --cpus=2 \
+        --container-runtime=containerd \
+        --addons=ingress
+    args:
+      executable: /bin/bash
+    become: false
 
-    - name: Wait for namespace to exist
-      shell: |
-        for i in {1..10}; do
-          kubectl get ns wastevsion && exit 0
-          sleep 2
-        done
-        echo "Namespace not found" >&2
-        exit 1
-      args:
-        executable: /bin/bash
-      become: false
+  # -------------------------------------------------
+  #  Applicazione manifest Kubernetes
+  # -------------------------------------------------
+  - name: Verifica che namespace.yaml esista
+    stat:
+      path: "{{ manifests_dir }}/namespace.yaml"
+    register: ns_file
+    become: false
 
-    - name: Apply remaining manifests
-      shell: |
-        find {{ manifests_dir }} -type f ! -name 'namespace.yaml' -exec kubectl apply -f {} \;
-      args:
-        executable: /bin/bash
-      become: false
+  - name: Ferma playbook se namespace.yaml non trovato
+    fail:
+      msg: "namespace.yaml non esiste in {{ manifests_dir }}"
+    when: not ns_file.stat.exists
 
+  - name: Applica namespace.yaml
+    shell: kubectl apply -f {{ manifests_dir }}/namespace.yaml
+    become: false
 
-    - name: Wait until all pods are Running
-      shell: |
-        set -euo pipefail
-        echo "Waiting for pods…";
-        kubectl wait --for=condition=Ready pods --all -n wastevsion --timeout=300s
-      args:
-        executable: /bin/bash
-      become: false
+  - name: Attendi che il namespace sia creato
+    shell: |
+      for i in {1..10}; do
+        kubectl get ns wastevsion && exit 0
+        sleep 2
+      done
+      echo "Namespace not found" >&2
+      exit 1
+    become: false
 
-    
+  - name: Applica tutti gli altri manifest
+    shell: |
+      find {{ manifests_dir }} -type f ! -name 'namespace.yaml' -exec kubectl apply -f {} \;
+    args:
+      executable: /bin/bash
+    become: false
+
+  # -------------------------------------------------
+  #  Wait until pods are Ready
+  # -------------------------------------------------
+  - name: Attendi che tutti i pod siano Ready
+    shell: |
+      set -euo pipefail
+      echo "Waiting for pods…";
+      kubectl wait --for=condition=Ready pods --all -n wastevsion --timeout=300s
+    args:
+      executable: /bin/bash
+    become: false
