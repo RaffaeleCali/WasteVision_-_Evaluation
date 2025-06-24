@@ -93,7 +93,7 @@
       shell: |
         minikube start \
           --driver=docker \
-          --memory=6192mb \
+          --memory=2827mb \
           --cpus=2 \
           --container-runtime=containerd \
           --addons=ingress
