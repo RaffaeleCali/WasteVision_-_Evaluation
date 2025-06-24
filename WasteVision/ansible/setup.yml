@@ -135,7 +135,7 @@
       shell: |
         set -euo pipefail
         echo "Waiting for pods…";
-        kubectl wait --for=condition=Ready pods --all -n wastevsion --timeout=180s
+        kubectl wait --for=condition=Ready pods --all -n wastevsion --timeout=300s
       args:
         executable: /bin/bash
       become: false
