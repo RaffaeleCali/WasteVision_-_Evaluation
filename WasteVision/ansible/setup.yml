@@ -8,11 +8,11 @@
 #              • GH_PAT env var with a Personal Access Token (scope: repo)
 # =====================================================
 
-- name: Deploy SistemiCloud on EC2 Minikube
+- name: Deploy WasteVision_-_Evaluation on EC2 Minikube
   hosts: productEC2
   become: true
   vars:
-    project_dir: /home/ec2-user/SistemiCloud
+    project_dir: /home/ec2-user/WasteVision_-_Evaluation
     repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git" 
     repo_branch: main
     manifests_dir: "{{ project_dir }}/deployment"
