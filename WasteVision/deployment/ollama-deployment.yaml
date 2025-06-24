@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ollama-deployment
+  namespace: wastevsion
   labels:
     app: ollama
 spec:
@@ -17,7 +18,7 @@ spec:
       volumes:
       - name: ollama-storage
         hostPath:
-          path: /home/ec2-user/SistemiCloud/ollama_mod/ollama2   # Update this path if needed
+          path: /home/ec2-user/WasteVision_-_Evaluation/WasteVision/ollama_mod/ollama2   # Update this path if needed
           type: DirectoryOrCreate
       initContainers:
       - name: model-downloader
@@ -49,6 +50,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ollama-service
+  namespace: wastevsion
 spec:
   selector:
     app: ollama
