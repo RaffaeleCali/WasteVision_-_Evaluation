@@ -57,17 +57,29 @@
     # -------------------------------------------------
     #  Minikube installation (if missing)
     # -------------------------------------------------
-    - name: Check if Minikube is installed
-      command: which minikube
-      register: minikube_cli
-      ignore_errors: yes
-      become: false
-
-    - name: Run bootstrap script when Minikube is absent
+    - name: Install kubectl if Minikube not found
       shell: |
-        bash {{ project_dir }}/run2.sh 2>&1 | tee {{ project_dir }}/run2.log
-      args:
-        executable: /bin/bash
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+      when: minikube_cli.rc != 0
+      become: true
+
+    - name: Install Docker if Minikube not found
+      shell: |
+        sudo yum update -y
+        sudo yum install -y docker
+        sudo systemctl start docker
+        sudo systemctl enable docker
+        sudo usermod -aG docker ec2-user
+      when: minikube_cli.rc != 0
+      become: true
+
+    - name: Install Minikube
+      shell: |
+        curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        chmod +x minikube
+        sudo mv minikube /usr/local/bin/minikube
       when: minikube_cli.rc != 0
       become: true
 
@@ -140,20 +152,4 @@
         executable: /bin/bash
       become: false
 
-    # -------------------------------------------------
-    #  Port‑forward selected services (background)
-    # -------------------------------------------------
-    - name: Port‑forward services in background
-      shell: |
-        nohup kubectl port-forward svc/{{ item.svc }} {{ item.local }}:{{ item.remote }} --address 0.0.0.0 >/dev/null 2>&1 &
-      loop: "{{ port_forward_specs }}"
-      loop_control:
-        label: "svc {{ item.svc }}"
-      become: false
-
-    - name: Show forwarded services
-      debug:
-        msg: "Forwarded {{ item.local }}→{{ item.remote }} for {{ item.svc }}"
-      loop: "{{ port_forward_specs }}"
-      loop_control:
-        label: "svc {{ item.svc }}"
+    
