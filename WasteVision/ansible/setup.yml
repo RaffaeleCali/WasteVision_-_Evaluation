@@ -91,18 +91,21 @@
     when: minikube_cli.rc == 0
     ignore_errors: true
     become: false
+  - name: Reload docker group (makes socket accessible in this session)
+    shell: newgrp docker -c 'echo docker group reloaded'
+    become: false
 
   - name: Avvia Minikube con driver Docker
     shell: |
       minikube start \
         --driver=docker \
-        --memory=2827mb \
+        --memory=2200mb \
         --cpus=2 \
         --container-runtime=containerd \
         --addons=ingress
     args:
       executable: /bin/bash
-    become: true
+    become: false
 
   # -------------------------------------------------
   #  Applicazione manifest Kubernetes
