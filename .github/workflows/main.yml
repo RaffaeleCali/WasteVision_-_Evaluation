@@ -59,7 +59,7 @@ jobs:
           if [ -f WasteVision/.env ]; then
             echo "Loading variables from WasteVision/.env"
             set -o allexport
-            source .env
+            source WasteVision/.env
             set +o allexport
             if [ -z "$INSTANCE_PUBLIC_IP" ]; then
               echo "::error::INSTANCE_PUBLIC_IP missing in .env" && exit 1
