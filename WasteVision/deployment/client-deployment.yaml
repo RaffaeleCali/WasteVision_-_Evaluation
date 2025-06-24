@@ -24,7 +24,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: react-frontend
-  namespace: myproject
+  namespace: wastevsion
 spec:
   selector: {app: react-frontend}
   ports:

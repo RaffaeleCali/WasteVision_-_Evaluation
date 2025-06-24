@@ -12,10 +12,10 @@
   hosts: productEC2
   become: true
   vars:
-    project_dir: /home/ec2-user/WasteVision_-_Evaluation
+    project_dir: /home/ec2-user/WasteVision_-_Evaluation/WasteVision
     repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git" 
     repo_branch: main
-    manifests_dir: "{{ project_dir }}/WasteVision/deployment"
+    manifests_dir: "{{ project_dir }}/deployment"
     port_forward_specs:
       - svc: ollama
         local: 11434
@@ -65,7 +65,7 @@
 
     - name: Run bootstrap script when Minikube is absent
       shell: |
-        bash {{ project_dir }}/WasteVision/run2.sh 2>&1 | tee {{ project_dir }}/WasteVision/run2.log
+        bash {{ project_dir }}/run2.sh 2>&1 | tee {{ project_dir }}/run2.log
       args:
         executable: /bin/bash
       when: minikube_cli.rc != 0
@@ -114,7 +114,7 @@
     - name: Wait for namespace to exist
       shell: |
         for i in {1..10}; do
-          kubectl get ns myproject && exit 0
+          kubectl get ns wastevsion && exit 0
           sleep 2
         done
         echo "Namespace not found" >&2
@@ -135,7 +135,7 @@
       shell: |
         set -euo pipefail
         echo "Waiting for pods…";
-        kubectl wait --for=condition=Ready pods --all -n myproject --timeout=180s
+        kubectl wait --for=condition=Ready pods --all -n wastevsion --timeout=180s
       args:
         executable: /bin/bash
       become: false
