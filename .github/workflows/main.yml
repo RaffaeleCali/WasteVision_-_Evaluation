@@ -56,8 +56,8 @@ jobs:
       - name: Load INSTANCE_PUBLIC_IP from .env
         id: load_env
         run: |
-          if [ -f .env ]; then
-            echo "Loading variables from .env"
+          if [ -f WasteVision/.env ]; then
+            echo "Loading variables from WasteVision/.env"
             set -o allexport
             source .env
             set +o allexport
