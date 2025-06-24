@@ -15,7 +15,7 @@
     project_dir: /home/ec2-user/WasteVision_-_Evaluation
     repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git" 
     repo_branch: main
-    manifests_dir: "{{ project_dir }}/deployment"
+    manifests_dir: "{{ project_dir }}/WasteVision/deployment"
     port_forward_specs:
       - svc: ollama
         local: 11434
@@ -106,7 +106,7 @@
     # -------------------------------------------------
     - name: Apply only the namespace manifest
       shell: |
-        kubectl apply -f WasteVision/{{ manifests_dir }}/namespace.yaml
+        kubectl apply -f {{ manifests_dir }}/namespace.yaml
       args:
         executable: /bin/bash
       become: false
@@ -125,7 +125,7 @@
 
     - name: Apply remaining manifests
       shell: |
-        find WasteVision/{{ manifests_dir }} -type f ! -name 'namespace.yaml' -exec kubectl apply -f {} \;
+        find {{ manifests_dir }} -type f ! -name 'namespace.yaml' -exec kubectl apply -f {} \;
       args:
         executable: /bin/bash
       become: false
