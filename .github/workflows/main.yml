@@ -53,13 +53,13 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Load INSTANCE_PUBLIC_IP from .env
+      - name: Load INSTANCE_PUBLIC_IP from .env s
         id: load_env
         run: |
           if [ -f WasteVision/.env ]; then
             echo "Loading variables from WasteVision/.env"
             set -o allexport
-            source .env
+            source WasteVision/.env
             set +o allexport
             if [ -z "$INSTANCE_PUBLIC_IP" ]; then
               echo "::error::INSTANCE_PUBLIC_IP missing in .env" && exit 1

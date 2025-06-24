@@ -13,7 +13,7 @@
   become: true
   vars:
     project_dir: /home/ec2-user/SistemiCloud
-    repo_url: "https://{{ lookup('env', 'GH_PAT') }}@github.com/RaffaeleCali/WasteVision_-_Evaluation.git" 
+    repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git" 
     repo_branch: main
     manifests_dir: "{{ project_dir }}/deployment"
     port_forward_specs:
