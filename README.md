@@ -1,6 +1,6 @@
 # WasteVision: Food Waste Estimation with Vision-Language Models
 
-**WasteVision** is a multimodal platform that allows users to estimate food waste from images of plates using advanced Vision-Language Models (VLMs) such as OpenAI’s GPT-4 Vision, Google Gemini, and open-source models via Ollama.
+**WasteVision** is a multimodal platform that allows users to estimate food waste from images of plates using advanced Vision-Language Models (VLMs) such as OpenAI’s GPT-4  Vision, Google Gemini, and open-source models via Ollama.
 
 ---
 
