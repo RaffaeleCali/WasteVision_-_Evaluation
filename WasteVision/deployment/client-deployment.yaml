@@ -20,19 +20,19 @@ spec:
         - name: react-frontend
           image: raffa8/react-frontend:latest
           ports:
-            - containerPort: 80
+            - containerPort: 5000
           readinessProbe:
             httpGet:
               path: /
-              port: 80
-            initialDelaySeconds: 35     # un po’ di respiro
+              port: 5000
+            initialDelaySeconds: 30     # un po’ di respiro
             periodSeconds: 10
             failureThreshold: 6         # 1 min prima di fallire
 
           livenessProbe:
             httpGet:
               path: /
-              port: 80
+              port: 5000
             initialDelaySeconds: 60     # parte dopo 1 min
             periodSeconds: 20
             failureThreshold: 4
@@ -50,5 +50,5 @@ spec:
   type: NodePort
   ports:
     - port: 80          # porta interna al cluster
-      targetPort: 80    # porta del container
+      targetPort: 5000    # porta del container
       nodePort: 30080   # porta esterna sul nodo EC2
