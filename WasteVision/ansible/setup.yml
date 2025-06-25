@@ -13,7 +13,7 @@
     repo_branch: main
 
     # Kubernetes / Minikube
-    kube_ns: wastevision
+    kube_ns: wastevsion
     manifests_dir: "{{ project_dir }}/WasteVision/deployment"
     minikube_opts: >
       --driver=docker
