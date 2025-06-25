@@ -1,8 +1,8 @@
-# =====================================================
+# =============================================================
 # Playbook: deploy.yml
-# Scope   : Provision EC2 host, install/upgrade Minikube,
-#           deploy applicazione WasteVision e pubblicare le porte.
-# =====================================================
+# Scopo   : Provision host EC2, installa/aggiorna Minikube,
+#           deploy di WasteVision e port-forward dei servizi.
+# =============================================================
 
 - hosts: productEC2
   become: true
@@ -11,6 +11,8 @@
     project_dir: /home/ec2-user/WasteVision_-_Evaluation
     repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git"
     repo_branch: main
+
+    # Kubernetes / Minikube
     kube_ns: wastevision
     manifests_dir: "{{ project_dir }}/deployment"
     minikube_opts: >
@@ -21,132 +23,142 @@
       --addons=ingress
 
   tasks:
-    # -------------------------------------------------
-    # Pacchetti base + Docker service
-    # -------------------------------------------------
-    - name: Ensure Git and Docker are installed
-      package:
-        name: ['git', 'docker']
-        state: present
+  # -----------------------------------------------------------
+  # Pacchetti base + Docker
+  # -----------------------------------------------------------
+  - name: Ensure Git and Docker are installed
+    ansible.builtin.package:
+      name: [ git, docker ]
+      state: present
 
-    - name: Enable/start Docker
-      systemd:
-        name: docker
-        state: started
-        enabled: true
+  - name: Enable and start Docker
+    ansible.builtin.systemd:
+      name: docker
+      state: started
+      enabled: true
 
-    - name: Add ec2-user to docker group
-      user:
-        name: ec2-user
-        groups: docker
-        append: yes
+  # -----------------------------------------------------------
+  # Checkout repository
+  # -----------------------------------------------------------
+  - name: Clone (or update) WasteVision repo
+    ansible.builtin.git:
+      repo: "{{ repo_url }}"
+      dest: "{{ project_dir }}"
+      version: "{{ repo_branch }}"
+      force: true
+    become: false      # eseguiamo come ec2-user
 
-    # -------------------------------------------------
-    # Repo checkout
-    # -------------------------------------------------
-    - name: Clone (or update) repo
-      git:
-        repo: "{{ repo_url }}"
-        dest: "{{ project_dir }}"
-        version: "{{ repo_branch }}"
-        force: true
-      become: false
+  # -----------------------------------------------------------
+  # Install kubectl & Minikube se mancano
+  # -----------------------------------------------------------
+  - name: Ensure Minikube binary is present
+    ansible.builtin.stat:
+      path: /usr/local/bin/minikube
+    register: mk_stat
 
-    # -------------------------------------------------
-    # Minikube / kubectl install (if missing)
-    # -------------------------------------------------
-    - name: Ensure Minikube binary is present
-      stat:
-        path: /usr/local/bin/minikube
-      register: mk_stat
+  - name: Download Minikube
+    ansible.builtin.get_url:
+      url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+      dest: /usr/local/bin/minikube
+      mode: "0755"
+    when: not mk_stat.stat.exists
 
-    - name: Download Minikube
-      get_url:
-        url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        dest: /usr/local/bin/minikube
-        mode: "0755"
-      when: not mk_stat.stat.exists
+  - name: Ensure kubectl binary is present
+    ansible.builtin.stat:
+      path: /usr/local/bin/kubectl
+    register: kubectl_stat
 
-    - name: Ensure kubectl binary is present
-      stat:
-        path: /usr/local/bin/kubectl
-      register: kubectl_stat
+  - name: Download kubectl
+    ansible.builtin.shell: |
+      curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+      install -m 0755 kubectl /usr/local/bin/kubectl
+    when: not kubectl_stat.stat.exists
 
-    - name: Download kubectl
-      shell: |
-        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-        install -m 0755 kubectl /usr/local/bin/kubectl
-      when: not kubectl_stat.stat.exists
+  # -----------------------------------------------------------
+  # Avvio cluster con utente ec2-user
+  # -----------------------------------------------------------
+  - name: Add ec2-user to docker group
+    ansible.builtin.user:
+      name: ec2-user
+      groups: docker
+      append: yes
 
-    # -------------------------------------------------
-    # Avvio / restart del cluster
-    # -------------------------------------------------
-    - name: Delete existing cluster (idempotente)
-      command: minikube delete
-      register: delete_out
-      changed_when: "'Deleting' in delete_out.stdout"
-      failed_when: false
+  - name: Refresh SSH connection so new groups are picked up
+    ansible.builtin.meta: reset_connection
+    become: false      # da qui operiamo come ec2-user
 
-    - name: Start Minikube (run as root per evitare sg/newgrp)
-      command: >
-        minikube start {{ minikube_opts }}
-      environment:
-        MINIKUBE_IN_STYLE: "false"    # niente TTY check
-      register: mkout
+  # (Opzionale) elimina eventuale cluster precedente
+  - name: Delete existing Minikube cluster (if any)
+    ansible.builtin.shell: |
+      sg docker -c "minikube delete || true"
+    args:
+      executable: /bin/bash
+    changed_when: false
+    ignore_errors: true
 
-    - debug: var=mkout.stdout_lines
+  # Avvio Minikube
+  - name: Start Minikube as ec2-user (sg docker)
+    ansible.builtin.shell: |
+      sg docker -c "minikube start {{ minikube_opts }}"
+    args:
+      executable: /bin/bash
+    register: minikube_start
+    become: false
 
-    # -------------------------------------------------
-    # Deploy manifest
-    # -------------------------------------------------
-    - name: Apply namespace.yaml first
-      command: kubectl apply -f {{ manifests_dir }}/namespace.yaml
-      become: false
+  - ansible.builtin.debug:
+      var: minikube_start.stdout_lines
 
-    - name: Wait until namespace exists
-      command: kubectl get ns {{ kube_ns }} --no-headers
-      retries: 10
-      delay: 3
-      register: ns_check
-      until: ns_check.rc == 0
-      become: false
+  # -----------------------------------------------------------
+  # Deploy dei manifest
+  # -----------------------------------------------------------
+  - name: Apply namespace.yaml
+    ansible.builtin.command: kubectl apply -f {{ manifests_dir }}/namespace.yaml
+    become: false
 
-    - name: Apply remaining manifests
-      become: false
-      command: kubectl apply -f {{ item }}
-      loop: "{{ query('fileglob', manifests_dir + '/*.yaml') }}"
-      when: "'namespace.yaml' not in item"
+  - name: Wait until namespace exists
+    ansible.builtin.command: kubectl get ns {{ kube_ns }} --no-headers
+    register: ns_check
+    retries: 10
+    delay: 3
+    until: ns_check.rc == 0
+    become: false
 
-    # -------------------------------------------------
-    # Wait for all pods to be Ready
-    # -------------------------------------------------
-    - name: Wait for pods ready
-      become: false
-      command: >
-        kubectl wait --for=condition=Ready pod --all
-        -n {{ kube_ns }} --timeout=300s
+  - name: Apply remaining manifests
+    ansible.builtin.command: kubectl apply -f {{ item }}
+    loop: "{{ query('fileglob', manifests_dir + '/*.yaml') }}"
+    when: "'namespace.yaml' not in item"
+    become: false
 
-    - name: Show final pod status
-      become: false
-      command: kubectl get pods -n {{ kube_ns }} -o wide
+  # -----------------------------------------------------------
+  # Attesa pod Ready e riepilogo
+  # -----------------------------------------------------------
+  - name: Wait for all pods to be Ready
+    ansible.builtin.command: >
+      kubectl wait --for=condition=Ready pod --all
+      -n {{ kube_ns }} --timeout=300s
+    become: false
 
-    # -------------------------------------------------
-    # (Opzionale) Port-forward asincroni
-    # -------------------------------------------------
-    - name: Forward Ollama (async)
-      become: false
-      command: kubectl port-forward svc/ollama-service 11434:11434 --address 0.0.0.0
-      async: 0
-      poll: 0
+  - name: Show final pod status
+    ansible.builtin.command: kubectl get pods -n {{ kube_ns }} -o wide
+    become: false
 
-    - name: Forward API server (async)
-      become: false
-      command: kubectl port-forward svc/server-service 5000:5000 --address 0.0.0.0
-      async: 0
-      poll: 0
+  # -----------------------------------------------------------
+  # Port-forward asincroni (opzionali)
+  # -----------------------------------------------------------
+  - name: Forward Ollama (async)
+    ansible.builtin.command: kubectl port-forward svc/ollama-service 11434:11434 --address 0.0.0.0
+    async: 0
+    poll: 0
+    become: false
 
-    - name: Forward client (async)
-      become: false
-      command: kubectl port-forward svc/client-service 8501:8501 --address 0.0.0.0
-      async: 0
-      poll: 0
+  - name: Forward API server (async)
+    ansible.builtin.command: kubectl port-forward svc/server-service 5000:5000 --address 0.0.0.0
+    async: 0
+    poll: 0
+    become: false
+
+  - name: Forward client (async)
+    ansible.builtin.command: kubectl port-forward svc/client-service 8501:8501 --address 0.0.0.0
+    async: 0
+    poll: 0
+    become: false
