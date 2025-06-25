@@ -122,12 +122,10 @@
     delay: 3
     until: ns_check.rc == 0
     become: false
-
-  - name: Apply remaining manifests
-    ansible.builtin.command: kubectl apply -f {{ item }}
-    loop: "{{ query('fileglob', manifests_dir + '/*.yaml') }}"
-    when: "'namespace.yaml' not in item"
+  - name: Apply every manifest in deployment directory
+    ansible.builtin.command: kubectl apply -n {{ kube_ns }} -f {{ manifests_dir }}
     become: false
+
 
   # -----------------------------------------------------------
   # Attesa pod Ready e riepilogo
