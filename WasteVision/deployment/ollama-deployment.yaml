@@ -44,7 +44,7 @@ spec:
         lifecycle:
           postStart:
             exec:
-              command: ["/bin/sh", "-c", "ollama pull tinyllama"]
+              command: ["/bin/sh", "-c" ]
 ---
 apiVersion: v1
 kind: Service

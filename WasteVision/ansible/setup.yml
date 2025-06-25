@@ -182,11 +182,48 @@
   # -------------------------------------------------
   #  Wait until pods are Ready
   # -------------------------------------------------
-  - name: Attendi che tutti i pod siano Ready
+  - name: Verifica se ci sono pod nel namespace
+    shell: kubectl get pods -n wastevsion --no-headers | wc -l
+    register: pod_count
+    become: false
+
+  - name: Debug pod count
+    debug:
+      msg: "Numero di pod trovati nel namespace wastevsion: {{ pod_count.stdout }}"
+
+  - name: Attendi che tutti i pod siano Ready (se esistono)
     shell: |
       set -euo pipefail
-      echo "Waiting for pods…";
-      kubectl wait --for=condition=Ready pods --all -n wastevsion --timeout=300s
+      echo "Waiting for pods to be ready..."
+      
+      # First check if there are any pods
+      POD_COUNT=$(kubectl get pods -n wastevsion --no-headers 2>/dev/null | wc -l)
+      if [ "$POD_COUNT" -eq 0 ]; then
+        echo "No pods found in namespace wastevsion"
+        exit 0
+      fi
+      
+      echo "Found $POD_COUNT pods, waiting for them to be ready..."
+      
+      # Wait for pods with better error handling
+      if ! kubectl wait --for=condition=Ready pods --all -n wastevsion --timeout=300s; then
+        echo "Some pods failed to become ready. Current pod status:"
+        kubectl get pods -n wastevsion
+        kubectl describe pods -n wastevsion
+        exit 1
+      fi
+      
+      echo "All pods are ready!"
     args:
       executable: /bin/bash
     become: false
+    when: pod_count.stdout|int > 0
+
+  - name: Mostra stato finale dei pod
+    shell: |
+      echo "=== Final Pod Status ==="
+      kubectl get pods -n wastevsion -o wide
+      echo "=== Services ==="
+      kubectl get svc -n wastevsion
+    become: false
+    ignore_errors: true
