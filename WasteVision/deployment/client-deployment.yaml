@@ -43,8 +43,8 @@ metadata:
 spec:
   selector:
     app: react-frontend
-  ports:
-    - port: 80
-      targetPort: 80
   type: NodePort
-  nodePort: 30080  
+  ports:
+    - port: 80          # porta interna al cluster
+      targetPort: 80    # porta del container
+      nodePort: 30080   # porta esterna sul nodo EC2
