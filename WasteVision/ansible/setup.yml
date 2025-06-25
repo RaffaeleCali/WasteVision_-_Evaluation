@@ -153,20 +153,24 @@
   # -----------------------------------------------------------
   # Port-forward asincroni (opzionali)
   # -----------------------------------------------------------
-  - name: Forward Ollama (async)
-    ansible.builtin.command: kubectl port-forward svc/ollama-service 11434:11434 --address 0.0.0.0
-    async: 0
-    poll: 0
-    become: false
+# --- Port-forward tasks ---
+#- name: Forward Ollama (async)
+#  command: kubectl port-forward -n {{ kube_ns }} svc/ollama-service 11434:11434 --address 0.0.0.0
+#  async: 0
+#  poll: 0
+#  become: false
+#
 
-  - name: Forward API server (async)
-    ansible.builtin.command: kubectl port-forward svc/server-service 5000:5000 --address 0.0.0.0
-    async: 0
-    poll: 0
-    become: false
-
-  - name: Forward client (async)
-    ansible.builtin.command: kubectl port-forward svc/client-service 8501:8501 --address 0.0.0.0
+#  - name: Forward API server (async)
+#    ansible.builtin.command: kubectl port-forward svc/server-service 5000:5000 --address 0.0.0.0
+#    async: 0
+#    poll: 0
+#    become: false
+  - name: Forward React client (async)
+    ansible.builtin.command: >
+      kubectl port-forward -n {{ kube_ns }}
+      svc/react-frontend                          # nome servizio
+      30080:80 --address 0.0.0.0
     async: 0
     poll: 0
     become: false
