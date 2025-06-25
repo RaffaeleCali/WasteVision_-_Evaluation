@@ -170,8 +170,8 @@
   - name: Wait until react-frontend service exists
     command: kubectl get svc/react-frontend -n {{ kube_ns }}
     register: svc_check
-    retries: 10
-    delay: 10
+    retries: 15
+    delay: 20
     until: svc_check.rc == 0
     become: false
 

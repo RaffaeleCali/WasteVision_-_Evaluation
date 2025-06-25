@@ -25,14 +25,18 @@ spec:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 5
+            initialDelaySeconds: 35     # un po’ di respiro
             periodSeconds: 10
+            failureThreshold: 6         # 1 min prima di fallire
+
           livenessProbe:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 15
+            initialDelaySeconds: 60     # parte dopo 1 min
             periodSeconds: 20
+            failureThreshold: 4
+
 
 ---
 apiVersion: v1
