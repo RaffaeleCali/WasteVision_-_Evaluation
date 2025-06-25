@@ -179,7 +179,7 @@
   - name: Port-forward React client (BG)
     shell: |
       nohup kubectl port-forward -n {{ kube_ns }} \
-        svc/react-frontend 30080:5000 --address 0.0.0.0 \
+        svc/react-frontend 30080:80 --address 0.0.0.0 \
         > /dev/null 2>&1 &
     async: 0
     poll: 0
