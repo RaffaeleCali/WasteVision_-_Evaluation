@@ -14,7 +14,7 @@
 
     # Kubernetes / Minikube
     kube_ns: wastevision
-    manifests_dir: "{{ project_dir }}/deployment"
+    manifests_dir: "{{ project_dir }}/WasteVision/deployment"
     minikube_opts: >
       --driver=docker
       --memory=2200mb
