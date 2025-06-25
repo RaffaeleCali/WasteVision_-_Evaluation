@@ -12,7 +12,7 @@
     repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git"
     repo_branch: main
 
-    kube_ns: wastevision                                   # << spelling corretto
+    kube_ns: wastevsion                                   
     manifests_dir: "{{ project_dir }}/WasteVision/deployment"
 
     minikube_opts: >
