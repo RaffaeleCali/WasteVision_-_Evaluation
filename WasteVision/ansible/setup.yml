@@ -27,14 +27,12 @@
     group:
       name: docker
       state: present
-    register: docker_group
 
   - name: Add ec2-user to docker group
     user:
       name: ec2-user
       groups: docker
       append: true
-    when: docker_group.changed
 
   # -------------------------------------------------
   #  Checkout del progetto
@@ -44,7 +42,7 @@
       repo: "{{ repo_url }}"
       dest: "{{ project_dir }}"
       version: "{{ repo_branch }}"
-      force: true          # fa pull se la dir esiste
+      force: true
     become: false
 
   # -------------------------------------------------
@@ -68,7 +66,6 @@
           yum update -y
           yum install -y docker
           systemctl enable --now docker
-          usermod -aG docker ec2-user
 
       - name: Installa Minikube
         shell: |
@@ -76,6 +73,21 @@
           chmod +x /usr/local/bin/minikube
     when: minikube_cli.rc != 0
     become: true
+
+  # -------------------------------------------------
+  #  Docker service management
+  # -------------------------------------------------
+  - name: Ensure Docker service is running
+    systemd:
+      name: docker
+      state: started
+      enabled: true
+
+  - name: Add ec2-user to docker group (ensure it's applied)
+    user:
+      name: ec2-user
+      groups: docker
+      append: true
 
   # -------------------------------------------------
   #  (Ri)avvio cluster Minikube
@@ -91,13 +103,37 @@
     when: minikube_cli.rc == 0
     ignore_errors: true
     become: false
-  - name: Reload docker group (makes socket accessible in this session)
-    shell: newgrp docker -c 'echo docker group reloaded'
-    become: false
 
+  # FIXED: Replace the problematic newgrp command with a simple verification
+  - name: Verify Docker group membership
+    shell: groups ec2-user | grep -q docker
+    register: docker_group_check
+    ignore_errors: true
+
+  - name: Debug Docker group membership
+    debug:
+      msg: "Docker group membership check result: {{ docker_group_check.rc }}"
+
+  # Alternative approach: Use sg command or restart SSH connection
   - name: Avvia Minikube con driver Docker
     shell: |
-      minikube start \
+      # Use sg to run minikube with docker group privileges
+      sg docker -c "minikube start \
+        --driver=docker \
+        --memory=2200mb \
+        --cpus=2 \
+        --container-runtime=containerd \
+        --addons=ingress"
+    args:
+      executable: /bin/bash
+    become: false
+    register: minikube_start
+    ignore_errors: true
+
+  # Fallback: If sg doesn't work, try with sudo
+  - name: Avvia Minikube con sudo (fallback)
+    shell: |
+      sudo -u ec2-user minikube start \
         --driver=docker \
         --memory=2200mb \
         --cpus=2 \
@@ -105,7 +141,8 @@
         --addons=ingress
     args:
       executable: /bin/bash
-    become: false
+    when: minikube_start.failed
+    become: true
 
   # -------------------------------------------------
   #  Applicazione manifest Kubernetes
