@@ -12,9 +12,9 @@
     repo_url: "https://github.com/RaffaeleCali/WasteVision_-_Evaluation.git"
     repo_branch: main
 
-    # Kubernetes / Minikube
-    kube_ns: wastevsion
+    kube_ns: wastevision                                   # << spelling corretto
     manifests_dir: "{{ project_dir }}/WasteVision/deployment"
+
     minikube_opts: >
       --driver=docker
       --memory=2200mb
@@ -46,7 +46,7 @@
       dest: "{{ project_dir }}"
       version: "{{ repo_branch }}"
       force: true
-    become: false      # eseguiamo come ec2-user
+    become: false          # eseguito da ec2-user
 
   # -----------------------------------------------------------
   # Install kubectl & Minikube se mancano
@@ -85,7 +85,7 @@
 
   - name: Refresh SSH connection so new groups are picked up
     ansible.builtin.meta: reset_connection
-    become: false      # da qui operiamo come ec2-user
+    become: false          # da qui in poi task eseguiti come ec2-user
 
   # (Opzionale) elimina eventuale cluster precedente
   - name: Delete existing Minikube cluster (if any)
@@ -132,10 +132,18 @@
   # -----------------------------------------------------------
   # Attesa pod Ready e riepilogo
   # -----------------------------------------------------------
+  - name: Count pods in namespace
+    ansible.builtin.command: kubectl get pods -n {{ kube_ns }} --no-headers
+    register: pod_list
+    failed_when: false
+    changed_when: false
+    become: false
+
   - name: Wait for all pods to be Ready
     ansible.builtin.command: >
       kubectl wait --for=condition=Ready pod --all
       -n {{ kube_ns }} --timeout=300s
+    when: pod_list.stdout != ""
     become: false
 
   - name: Show final pod status
