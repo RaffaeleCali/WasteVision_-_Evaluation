@@ -103,13 +103,12 @@ class GoogleGeminiYoloModel(BaseMultimodalModel):
 
             Output rules  
             1. Return **only** the numerical waste value (integer or one decimal).  
-            2. If the data are insufficient or ambiguous, return the exact string
-            “NOT SURE”.  
-            3. Do **not** output anything else.
+            2. Do **not** output anything else.
 
             In the multimodal context, image A is the original photo and image B is the
             same photo annotated with YOLO bounding boxes.
             """.strip()
+          #  2. If the data are insufficient or ambiguous, return the exact string “NOT SURE”.  
 
         yolo_txt  = _format_detected(detected)
         full_prompt = (
@@ -117,7 +116,6 @@ class GoogleGeminiYoloModel(BaseMultimodalModel):
             "Image A is the original photo; image B is the YOLO-annotated photo.\n"
             "Detected objects:\n"
             f"{yolo_txt}\n\n"
-            f"User question: {prompt}"
         )
 
 
