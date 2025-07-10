@@ -87,7 +87,7 @@
     ansible.builtin.meta: reset_connection
     become: false          # da qui in poi task eseguiti come ec2-user
 
-  # (Opzionale) elimina eventuale cluster precedente
+  #  elimina eventuale cluster precedente
   - name: Delete existing Minikube cluster (if any)
     ansible.builtin.shell: |
       sg docker -c "minikube delete || true"

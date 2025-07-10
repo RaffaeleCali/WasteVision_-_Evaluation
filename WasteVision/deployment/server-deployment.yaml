@@ -27,13 +27,13 @@ spec:
               value: "jaeger-collector:14250"
           readinessProbe:
             httpGet:
-              path: /healthcheck     # Cambia se necessario
+              path: /healthcheck     
               port: 5001
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /healthcheck     # Cambia se necessario
+              path: /healthcheck     
               port: 5001
             initialDelaySeconds: 15
             periodSeconds: 20

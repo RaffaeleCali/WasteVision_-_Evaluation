@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { Snackbar, Alert } from '@mui/material'; 
 
-import { Select, MenuItem, FormControl, InputLabel, TextField, Button } from '@mui/material';
+import { Select, MenuItem, FormControl,FormControlLabel,Switch, InputLabel, TextField, Button } from '@mui/material';
 import './ConfigPanel.css';
 
 const HOST_OPTIONS = ['openai', 'google', 'ollama'];
@@ -18,6 +18,7 @@ const ConfigPanel = ({ setConfig, setBlocked }) => {
   const [api_key, setApiKey] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [prompt, setPrompt] = useState('');
+  const [dlvk, setDlvk] = useState(false);  
   const loadConfig = async () => {
     try {
       const res = await fetch('/api/config');
@@ -27,6 +28,8 @@ const ConfigPanel = ({ setConfig, setBlocked }) => {
         setModel(data.model || MODELS[data.host || 'openai'][0]);
         setApiKey(data.api_key || '');
         setPrompt(data.prompt || '');
+        setDlvk(Boolean(data?.model?.dlvk));       
+
       }
     } catch (err) {
       console.error("Error loading configuration:", err);
@@ -42,7 +45,7 @@ const ConfigPanel = ({ setConfig, setBlocked }) => {
   };
   
   const handleSave = async () => {
-    const cfg = { host, model, api_key, prompt };
+    const cfg = { host, model, api_key, prompt ,dlvk };
   
     try {
       await fetch('/api/config', {
@@ -117,7 +120,11 @@ const ConfigPanel = ({ setConfig, setBlocked }) => {
             ))}
             </Select>
         </FormControl>
-
+        <FormControlLabel
+          control={<Switch checked={dlvk} onChange={e => setDlvk(e.target.checked)} />}
+          label="DLVK (YOLO Vision)"
+        />
+        
         <TextField
             label="API Key"
             variant="outlined"

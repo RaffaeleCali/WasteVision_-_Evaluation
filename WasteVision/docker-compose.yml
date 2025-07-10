@@ -37,6 +37,17 @@ services:
     networks:
       - backend
 
+  yolodetect:
+    build: ./yolo
+    ports:
+      - "8091:8091"
+    volumes:
+      - ./yolo:/yolo
+      - ./temp_images:/app/temp_images
+    container_name: yolodetect
+    networks:
+      - backend
+
 
 networks:
   backend:

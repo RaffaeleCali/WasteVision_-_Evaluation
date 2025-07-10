@@ -63,7 +63,7 @@ variable "tags" {
 ############################################
 locals {
   # Porta/e pubbliche dell'applicazione (HTTP/HTTPS)
-  open_app_ports = [80, 443]
+  open_app_ports = [30080]  # [80, 443]
 }
 
 ############################################

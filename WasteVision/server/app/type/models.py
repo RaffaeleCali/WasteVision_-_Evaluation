@@ -5,4 +5,5 @@ class ModelConfig(BaseModel):
     host: str
     model: str
     api_key: Optional[str] = None
-    prompt: Optional[str] = None  
+    prompt: Optional[str] = None
+    dlvk: bool = False

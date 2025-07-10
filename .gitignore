@@ -1,2 +1,5 @@
 /tossit-plates-1
 /WasteVision/react_frontend/node_modules
+/WasteVision/terraform/*
+
+!/WasteVision/terraform/main.tf
