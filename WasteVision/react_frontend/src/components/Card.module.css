@@ -1,0 +1,29 @@
+@reference "tailwindcss";
+
+.card {
+    @apply bg-white p-4 rounded-3xl shadow-md min-w-[18rem] min-h-[20rem] flex flex-col gap-3;
+}
+
+.header {
+    @apply text-white flex items-center justify-center; 
+}
+
+.title {
+    @apply flex items-center justify-center gap-2 rounded-2xl w-full py-2 text-center bg-[#6466F1];
+}
+
+.title .text {
+    @apply text-lg;
+}
+
+.title .icon {
+    @apply flex items-center justify-center w-5;
+}
+
+.content {
+    @apply text-gray-700;
+}
+
+.content .image {
+    @apply w-full h-full border border-[#6466F1] rounded-2xl;
+}
