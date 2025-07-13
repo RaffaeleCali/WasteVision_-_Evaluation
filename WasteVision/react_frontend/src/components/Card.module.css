@@ -1,19 +1,43 @@
 @reference "tailwindcss";
 
 .card {
-    @apply bg-white p-4 rounded-3xl shadow-md min-w-[18rem] min-h-[20rem] flex flex-col gap-3;
+    @apply bg-white p-2 md:p-4 rounded-4xl min-w-0 md:min-w-[14rem] min-h-[17rem] md:max-h-[17rem] w-full md:w-fit flex flex-col gap-3;
+}
+
+.card_prompt {
+    @apply w-full h-full max-w-[30rem] rounded-3xl p-4 text-gray-700 overflow-hidden;
+}
+
+.small_card {
+    @apply md:min-h-0 h-[7rem] w-full rounded-3xl text-gray-700 overflow-hidden;
 }
 
 .header {
-    @apply text-white flex items-center justify-center; 
+    @apply text-white flex items-center justify-center;
+}
+
+.small_card .header {
+    @apply text-white flex items-center justify-start;
+}
+
+.card_prompt .header {
+    @apply text-white flex flex-col md:flex-row items-center justify-between;
 }
 
 .title {
-    @apply flex items-center justify-center gap-2 rounded-2xl w-full py-2 text-center bg-[#6466F1];
+    @apply flex items-center justify-center gap-2 rounded-3xl w-full py-2 text-center bg-[#6466F1];
+}
+
+.card_prompt .title {
+    @apply w-full md:w-[13rem];
+}
+
+.small_card .title {
+    @apply w-full md:w-[13rem];
 }
 
 .title .text {
-    @apply text-lg;
+    @apply text-sm;
 }
 
 .title .icon {
@@ -21,9 +45,65 @@
 }
 
 .content {
-    @apply text-gray-700;
+    @apply flex flex-col justify-start text-gray-700 text-sm;
 }
 
 .content .image {
-    @apply w-full h-full border border-[#6466F1] rounded-2xl;
+    @apply w-full md:w-[14rem] h-[13.5rem] border border-[#6466F1] text-[#6466F1] rounded-3xl flex items-center justify-center text-center;
+}
+
+.content .radio {
+    @apply flex flex-col justify-between w-full h-full gap-2;
+}
+
+.content .radio .radio_label {
+    @apply py-3 border border-[#6466F1] rounded-3xl flex items-center justify-start gap-2 px-4;
+}
+
+.content .radio .radio_label input[type="radio"] {
+    @apply mr-2 flex items-center justify-center;
+}
+
+.content .prompt {
+    @apply w-full h-[11rem] md:h-[13.5rem] border border-[#6466F1] rounded-3xl p-4 text-gray-700 resize-none overflow-auto box-border text-justify;
+}
+
+.content .output {
+    @apply w-full h-[11rem] md:h-[13.5rem] border border-[#6466F1] rounded-3xl p-4 text-gray-700 resize-none overflow-auto box-border text-justify;
+}
+
+.select {
+    @apply h-full border border-[#6466F1] bg-white rounded-2xl py-3 px-2 resize-none overflow-auto;
+}
+
+.button {
+    @apply bg-white border border-[#6466F1] text-[#6466F1] rounded-3xl px-2 py-2 text-sm hover:bg-[#4f51d1] hover:text-white hover:cursor-pointer transition-all duration-300 ease-in-out mt-2 md:mt-0;
+}
+
+.row {
+    @apply flex flex-col md:flex-row items-center justify-between gap-4 w-full;
+}
+
+.actions {
+    @apply flex flex-col gap-3 w-full;
+}
+
+.config {
+    @apply flex flex-col gap-1 w-full;
+}
+
+.config_row {
+    @apply flex flex-row gap-8 w-full;
+}
+
+.config_title {
+    @apply text-base text-[#6466F1];
+}
+
+.label {
+    @apply flex items-center justify-between;
+}
+
+.input {
+    @apply border border-[#6466F1] rounded-3xl p-2 mx-3 text-gray-700;
 }
