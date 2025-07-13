@@ -12,6 +12,10 @@ const StartPage = () => {
   const [platform, setPlatform] = useState('');
   const [prompt, setPrompt] = useState('');
   const [output, setOutput] = useState('');
+  const [config, setConfig] = useState(null);
+  const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [chatgptApiKey, setChatgptApiKey] = useState('');
+  const [perplexityApiKey, setPerplexityApiKey] = useState('');
   const fileInputRef = useRef(null);
 
   const handleImageSelect = () => {
@@ -43,6 +47,75 @@ const StartPage = () => {
 
   const handleOutputChange = (e) => {
     setOutput(e.target.value);
+  };
+
+  const handleGeminiApiKeyChange = (e) => {
+    setGeminiApiKey(e.target.value);
+  };
+
+  const handleChatgptApiKeyChange = (e) => {
+    setChatgptApiKey(e.target.value);
+  };
+
+  const handlePerplexityApiKeyChange = (e) => {
+    setPerplexityApiKey(e.target.value);
+  };
+
+  const saveCurrentConfig = async () => {
+    const configData = {
+      taskType,
+      platform,
+      prompt,
+      geminiApiKey,
+      chatgptApiKey,
+      perplexityApiKey
+    };
+
+    try {
+      const response = await fetch('/api/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(configData),
+      });
+
+      if (response.ok) {
+        setConfig(configData);
+        toast.success('Configuration saved successfully!');
+      } else {
+        toast.error('Failed to save configuration.');
+      }
+    } catch (error) {
+      console.error('Error saving config:', error);
+      toast.error('Error saving configuration.');
+    }
+  };
+
+  const loadLastConfig = async () => {
+    try {
+      const response = await fetch('/api/config');
+      if (response.ok) {
+        const data = await response.json();
+        if (data) {
+          setTaskType(data.taskType || '');
+          setPlatform(data.platform || '');
+          setPrompt(data.prompt || '');
+          setGeminiApiKey(data.geminiApiKey || '');
+          setChatgptApiKey(data.chatgptApiKey || '');
+          setPerplexityApiKey(data.perplexityApiKey || '');
+          setConfig(data);
+          toast.success('Configuration loaded successfully!');
+        } else {
+          toast.error('No saved configuration found.');
+        }
+      } else {
+        toast.error('Failed to load configuration.');
+      }
+    } catch (error) {
+      console.error('Error loading config:', error);
+      toast.error('Error loading configuration.');
+    }
   };
 
   const loadDefaultPrompt = () => {
@@ -220,10 +293,10 @@ const StartPage = () => {
         </Card>
         <Card title="Actions" icon={<Waypoints />}>
           <div className={cardStyles.actions}>
-              <button className={cardStyles.button} onClick={() => toast.success('Action executed!')}>
+              <button className={cardStyles.button} onClick={saveCurrentConfig}>
                 Save current config
               </button>
-              <button className={cardStyles.button} onClick={() => toast.success('Action executed!')}>
+              <button className={cardStyles.button} onClick={loadLastConfig}>
                 Load last config
               </button>
           </div>
@@ -245,7 +318,13 @@ const StartPage = () => {
             <div className={cardStyles.config_row}>
               <label className={cardStyles.label}>
                 <span>API Key:</span>
-                <input type="password" className={cardStyles.input} placeholder="Enter API key" />
+                <input 
+                  type="password" 
+                  className={cardStyles.input} 
+                  placeholder="Enter API key"
+                  value={geminiApiKey}
+                  onChange={handleGeminiApiKeyChange}
+                />
               </label>
             </div>
 
@@ -254,7 +333,13 @@ const StartPage = () => {
             <div className={cardStyles.config_row}>
               <label className={cardStyles.label}>
                 <span>API Key:</span>
-                <input type="password" className={cardStyles.input} placeholder="Enter API key" />
+                <input 
+                  type="password" 
+                  className={cardStyles.input} 
+                  placeholder="Enter API key"
+                  value={chatgptApiKey}
+                  onChange={handleChatgptApiKeyChange}
+                />
               </label>
             </div>  
 
@@ -263,7 +348,13 @@ const StartPage = () => {
             <div className={cardStyles.config_row}>
               <label className={cardStyles.label}>
                 <span>API Key:</span>
-                <input type="password" className={cardStyles.input} placeholder="Enter API key" />
+                <input 
+                  type="password" 
+                  className={cardStyles.input} 
+                  placeholder="Enter API key"
+                  value={perplexityApiKey}
+                  onChange={handlePerplexityApiKeyChange}
+                />
               </label>
             </div>
           </div>
