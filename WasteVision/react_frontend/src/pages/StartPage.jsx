@@ -15,7 +15,6 @@ const StartPage = () => {
   const [config, setConfig] = useState(null);
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [chatgptApiKey, setChatgptApiKey] = useState('');
-  const [perplexityApiKey, setPerplexityApiKey] = useState('');
   const fileInputRef = useRef(null);
 
   const handleImageSelect = () => {
@@ -57,10 +56,6 @@ const StartPage = () => {
     setChatgptApiKey(e.target.value);
   };
 
-  const handlePerplexityApiKeyChange = (e) => {
-    setPerplexityApiKey(e.target.value);
-  };
-
   const saveCurrentConfig = async () => {
     const configData = {
       taskType,
@@ -68,7 +63,6 @@ const StartPage = () => {
       prompt,
       geminiApiKey,
       chatgptApiKey,
-      perplexityApiKey
     };
 
     try {
@@ -138,6 +132,12 @@ const StartPage = () => {
         position="top-center"
         reverseOrder={false}
       />
+
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Multimodal Food Waste Detection in Canteen Plates with Large Language Models</h1>
+        </div>
+      </div>
 
       <div className={styles.content}>
         <Card title="Upload Image" icon={<ImageUp />}>
@@ -218,16 +218,6 @@ const StartPage = () => {
               <input 
                 type="radio" 
                 name="platform" 
-                value="perplexity" 
-                checked={platform === 'perplexity'}
-                onChange={handlePlatformChange}
-              />
-              Perplexity
-            </label>
-            <label className={cardStyles.radio_label}>
-              <input 
-                type="radio" 
-                name="platform" 
                 value="Ollama" 
                 checked={platform === 'Ollama'}
                 onChange={handlePlatformChange}
@@ -293,6 +283,9 @@ const StartPage = () => {
         </Card>
         <Card title="Actions" icon={<Waypoints />}>
           <div className={cardStyles.actions}>
+              <button className={cardStyles.button} onClick={() => console.log('TODO')}>
+                Detect
+              </button>
               <button className={cardStyles.button} onClick={saveCurrentConfig}>
                 Save current config
               </button>
@@ -342,21 +335,6 @@ const StartPage = () => {
                 />
               </label>
             </div>  
-
-            {/* Perplexity */}
-            <a className={cardStyles.config_title}>Perplexity</a>
-            <div className={cardStyles.config_row}>
-              <label className={cardStyles.label}>
-                <span>API Key:</span>
-                <input 
-                  type="password" 
-                  className={cardStyles.input} 
-                  placeholder="Enter API key"
-                  value={perplexityApiKey}
-                  onChange={handlePerplexityApiKeyChange}
-                />
-              </label>
-            </div>
           </div>
         </Card>
       </div>
