@@ -1,82 +1,72 @@
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from ultralytics import YOLO
 import os
-import io
-from PIL import Image
 import shutil
 import threading
 import time
 import base64
-from io import BytesIO
+import cv2
+import traceback
 
 app = FastAPI()
 
-
-# Carica il modello YOLO pre-addestrato
-model = YOLO(os.getcwd()+"/model/yolo11l-seg.pt")  
-
+model = YOLO(os.getcwd() + "/model/yolo11l-seg.pt")
 
 TEMP_DIR = "temp_images"
 os.makedirs(TEMP_DIR, exist_ok=True)
 
 def delayed_cleanup(input_image_path, save_dir, delay=20):
-    """
-    Rimuove i file temporanei dopo un ritardo.
-    """
-    time.sleep(delay)  
+    time.sleep(delay)
     try:
         if os.path.exists(input_image_path):
             os.remove(input_image_path)
             print(f"File rimosso: {input_image_path}")
+
         if os.path.exists(save_dir):
-            shutil.rmtree(save_dir)
-            print(f"Directory rimossa: {save_dir}")
+            for f in os.listdir(save_dir):
+                os.remove(os.path.join(save_dir, f))
+            print(f"Puliti i file da: {save_dir}")
     except Exception as e:
         print(f"Errore durante il cleanup: {e}")
 
 @app.post("/")
 async def upload_and_predict(file: UploadFile = File(...)):
     try:
-        # Salva l'immagine caricata in una directory temporanea
         input_image_path = os.path.join(TEMP_DIR, file.filename)
         with open(input_image_path, "wb") as f:
             f.write(await file.read())
 
-        # Esegui la predizione con YOLO
-        results = model.predict(source=[input_image_path], save=True, save_txt=False, imgsz=1024)
-        print(f"directory --- {results[0].save_dir}")
-        # Trova il percorso dell'immagine con le predizioni
-        output_image_path = os.getcwd() + "/" + results[0].save_dir
-          # YOLO salva l'immagine con le predizioni automaticamente
-        for file_name in os.listdir(output_image_path):
-            if file_name.endswith((".jpg", ".jpeg", ".png")):  # Cerca un'immagine
-                output_image_path = os.path.join(output_image_path, file_name)
-                break
-        # Restituisci l'immagine con le rilevazioni
-        if not output_image_path:
-            raise FileNotFoundError("Immagine con le rilevazioni non trovata.")
-        
-        
+        results = model.predict(source=[input_image_path], save=False, imgsz=1024)
+        result = results[0]
+
         detected_classes = []
-        for result in results:
-            for box in result.boxes:
-                class_index = int(box.cls)  # Ottieni l'indice della classe
-                class_name = result.names[class_index]  # Nome della classe
-                confidence = box.conf.item()  # Confidenza
-                detected_classes.append({
-                    "class_name": class_name,
-                    "confidence": round(confidence, 2)
-                })
+        for i, box in enumerate(result.boxes):
+            class_index = int(box.cls)
+            class_name = result.names[class_index]
+            confidence = round(box.conf.item(), 2)
 
+            area = None
+            if result.masks and result.masks.data is not None:
+                mask_tensor = result.masks.data[i]
+                area = float(mask_tensor.sum().item())
 
-        with open(output_image_path, "rb") as image_file:
-            base64_image = f"data:image/jpeg;base64,{base64.b64encode(image_file.read()).decode('utf-8')}"
+            detected_classes.append({
+                "class_name": class_name,
+                "confidence": confidence,
+                "area": area
+            })
 
-        # Restituisci l'immagine con le rilevazioni
-        
+        annotated_image = result.plot()
+        annotated_bgr = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
 
-        threading.Thread(target=delayed_cleanup, args=(input_image_path, results[0].save_dir)).start()
+        output_path = os.path.join(TEMP_DIR, f"annotated_{file.filename}")
+        cv2.imwrite(output_path, annotated_bgr)
+
+        with open(output_path, "rb") as img_file:
+            base64_image = base64.b64encode(img_file.read()).decode("utf-8")
+
+        threading.Thread(target=delayed_cleanup, args=(input_image_path, TEMP_DIR)).start()
 
         response = {
             "message": "Predizione completata con successo!",
@@ -84,12 +74,11 @@ async def upload_and_predict(file: UploadFile = File(...)):
             "image": base64_image
         }
         return JSONResponse(content=response)
-        
 
     except Exception as e:
+        print("❌ Errore:", str(e))
+        traceback.print_exc()
         return JSONResponse(content={"error": str(e)}, status_code=500)
-
-    
 
 if __name__ == "__main__":
     import uvicorn
