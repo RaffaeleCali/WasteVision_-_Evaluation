@@ -8,7 +8,7 @@ import './ConfigPanel.css';
 const HOST_OPTIONS = ['openai', 'google', 'ollama'];
 const MODELS = {
   openai: ['gpt-4o', 'gpt-3.5-turbo'],
-  google: ['gemini-2.5-flash-preview-04-17', 'gemini-flash'],
+  google: ['gemini-2.5-flash-preview-04-17', 'gemini-flash',"gemini-2.5-pro"],
   ollama: ['llava:v1.6','qwen3:8b-q8_0']
 };
 

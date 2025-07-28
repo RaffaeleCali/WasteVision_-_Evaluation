@@ -1,23 +1,31 @@
+# app/models/factory.py
 from app.type.models import ModelConfig
 from app.models.base import BaseMultimodalModel
 
 def get_model_from_config(cfg: ModelConfig) -> BaseMultimodalModel:
-    """Restituisce l’istanza del modello giusta, tenendo conto del flag dlvk."""
+    """Restituisce l’istanza del modello corretto, supportando Google, OpenAI e Ollama."""
 
-    if cfg.host == "google":
-        if cfg.dlvk:                                  # variante YOLO
-            from app.models.googleDLVK import GoogleGeminiYoloModel
-            return GoogleGeminiYoloModel(cfg.model, cfg.api_key)
-        from app.models.google_model import GoogleGeminiModel
-        return GoogleGeminiModel(cfg.model, cfg.api_key)
+    match cfg.host:
+        case "google":
+            if cfg.dlvk:
+                from app.models.googleDLVK import GoogleGeminiYoloModel
+                return GoogleGeminiYoloModel(cfg.model, cfg.api_key)
+            from app.models.google_model import GoogleGeminiModel
+            return GoogleGeminiModel(cfg.model, cfg.api_key)
 
-    if cfg.host == "openai":
-        # se in futuro serve la variante YOLO su OpenAI, gestiscila qui
-        from app.models.openai_model import OpenAIModel
-        return OpenAIModel(cfg.model, cfg.api_key)
+        case "openai":
+            if cfg.dlvk:
+                from app.models.OpenAIDLVK import OpenAIYoloModel
+                return OpenAIYoloModel(cfg.model, cfg.api_key)
+            from app.models.openai_model import OpenAIModel
+            return OpenAIModel(cfg.model, cfg.api_key)
 
-    if cfg.host == "ollama":
-        from app.models.ollama_model import OllamaModel
-        return OllamaModel(cfg.model)                 # api_key non richiesta
+        case "ollama":
+            if cfg.dlvk:
+                from app.models.OllamaDLVK import OllamaYoloModel
+                return OllamaYoloModel(cfg.model)
+            from app.models.ollama_model import OllamaModel
+            return OllamaModel(cfg.model)
 
-    raise ValueError(f"Unsupported host: {cfg.host}")
+        case _:
+            raise ValueError(f"Unsupported host: {cfg.host}")
