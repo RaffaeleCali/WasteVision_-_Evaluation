@@ -2,7 +2,7 @@ import os
 import json
 from app.type.models import ModelConfig
 from app.config import CONFIG_PATH
-
+from app.prompts.food_waste_prompt import FOOD_WASTE_SYS_PROMPT
 class AppState:
     config: ModelConfig | None = None
 
@@ -25,14 +25,7 @@ async def inizialize_app_state():
 
 def save_app_config(config: ModelConfig):
     if not config.prompt:
-        config.prompt = (
-            "Calculate of a waste of the plate (is a number 0 to 100, 100 all food in the plate  0 no food in the plate ). "
-            "The formula is: waste = FoodArea / (plateArea - GarbageArea). "
-            "FoodArea: The area on the plate occupied by the food items; "
-            "plateArea: The total surface area of the white plate; "
-            "GarbageArea: The area on the plate occupied by garbage. Garbage is not food. "
-            "Respond only the result of the model."
-        )
+        config.prompt = FOOD_WASTE_SYS_PROMPT
 
     os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:

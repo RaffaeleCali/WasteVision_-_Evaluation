@@ -17,7 +17,7 @@
 .header.mobile .top-bar {
     height: 8vh;
    /* background-color: var(--text-primary);*/
-    color: var(--background-light);;
+    color: var(--background-light);
     padding: 10px;
     display: flex;
     justify-content: flex-start;

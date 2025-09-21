@@ -20,7 +20,7 @@ class OllamaModel(BaseMultimodalModel):
                 "images": [base64_image],
                 "stream": False
             }
-
+            print("OllamaModel: prompt", prompt, flush=True)
             response = requests.post(self.api_url, json=payload)
             response.raise_for_status()
 
