@@ -1,6 +1,7 @@
 {
-  "host": "ollama",
-  "model": "llava:v1.6",
-  "api_key": "",
-  "prompt": "Calculate of a waste of the plate (is a number 0 to 100, 100 all food in the plate  0 no food in the plate ). The formula is: waste = FoodArea / (plateArea - GarbageArea). FoodArea: The area on the plate occupied by the food items; plateArea: The total surface area of the white plate; GarbageArea: The area on the plate occupied by garbage. Garbage is not food. Respond only the result of the model."
+  "host": "google",
+  "model": "gemini-2.5-pro",
+  "api_key": "AIzaSyCZJ4P-pXha8oNi1x_ZcHjB8Q2gnuXSKw4",
+  "prompt": "You are assisting with research on food waste estimation using visual analysis of canteen plates.\n\nAnalyze the provided image and estimate the percentage of food waste remaining **after a meal**. \nThe image shows a white plate containing some leftover food and possibly garbage (non-edible items).\n\nDefinitions:\n\u2022 FoodArea     \u2013 the area occupied by leftover food items.\n\u2022 GarbageArea  \u2013 the area occupied by garbage or non-edible items \n                 (e.g. forks, napkins, cups, bones).\n\u2022 PlateArea    \u2013 the total surface area of the white plate.\n\nUse the following formula to estimate waste:\n    Waste (%) = 100 \u00d7 FoodArea / (PlateArea \u2212 GarbageArea)\n\n\u26a0\ufe0f Output rules:\n- Respond only with the waste percentage as a number (e.g. 47 or 47.5).\n- Do not include units, text, or explanation.",
+  "dlvk": false
 }

@@ -25,7 +25,7 @@ services:
     ports:
       - 7689:11434
     volumes:
-      - ../../../../cloud/interfaccia_web/RagForCloudProject/ollama/ollama:/root/.ollama
+      - ../../../../../cloud/interfaccia_web/RagForCloudProject/ollama/ollama:/root/.ollama
     pull_policy: always
     tty: true
     restart: always
