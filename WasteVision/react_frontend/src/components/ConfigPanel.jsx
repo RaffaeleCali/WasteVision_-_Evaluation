@@ -8,7 +8,7 @@ import './ConfigPanel.css';
 const HOST_OPTIONS = ['openai', 'google', 'ollama'];
 const MODELS = {
   openai: ['gpt-4o', 'gpt-3.5-turbo'],
-  google: ['gemini-2.5-flash-preview-04-17', 'gemini-flash',"gemini-2.5-pro"],
+  google: ["gemini-2.5-pro",'gemini-2.5-flash-preview-04-17', 'gemini-flash'],
   ollama: ['llava:v1.6','qwen3:8b-q8_0']
 };
 
@@ -23,6 +23,7 @@ const ConfigPanel = ({ setConfig, setBlocked }) => {
     try {
       const res = await fetch('/api/config');
       const data = await res.json();
+      
       if (data) {
         setHost(data.host || 'openai');
         setModel(data.model || MODELS[data.host || 'openai'][0]);
@@ -46,7 +47,7 @@ const ConfigPanel = ({ setConfig, setBlocked }) => {
   
   const handleSave = async () => {
     const cfg = { host, model, api_key, prompt ,dlvk };
-  
+    console.log("Salvataggio della configurazione:", cfg);
     try {
       await fetch('/api/config', {
         method: 'POST',
@@ -75,6 +76,7 @@ const ConfigPanel = ({ setConfig, setBlocked }) => {
     } catch (error) {
       console.error('Error saving configuration:', error);
       setSnackbar({ open: true, message: 'Error saving configuration', severity: 'error' });
+      
     }
   };
   

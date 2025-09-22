@@ -1,29 +1,24 @@
-# Utilizziamo un'immagine base con Python
 FROM python:3.9-slim
-
-# Impostiamo la directory di lavoro
 WORKDIR /yolo
 
-
+# (Opzionale ma utile) libgl1 in caso qualche wheel cerchi GL
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    libgl1 libglib2.0-0 \
+ && rm -rf /var/lib/apt/lists/*
 
-# Copiamo i file di dipendenze
 COPY requirements.txt /yolo/requirements.txt
 
-# Installiamo le dipendenze
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install python-multipart
-RUN pip install dill
+# 1) aggiorna pip
+# 2) rimuovi eventuali cv2 non headless (se presenti in cache/dep transitiva)
+# 3) installa le dipendenze + forza la versione headless di opencv
+RUN python -m pip install --upgrade pip \
+ && pip uninstall -y opencv-python opencv-contrib-python || true \
+ && pip install --no-cache-dir -r requirements.txt \
+ && pip install --no-cache-dir opencv-python-headless==4.10.0.84 \
+ && pip install --no-cache-dir python-multipart dill
 
-# Copiamo il resto dell'applicazione
 COPY model /model
 COPY model.py model.py
 
-# Esporremo la porta 8080 per il server
 EXPOSE 8091
-
-# Comando per avviare il server
 CMD ["python", "model.py"]
