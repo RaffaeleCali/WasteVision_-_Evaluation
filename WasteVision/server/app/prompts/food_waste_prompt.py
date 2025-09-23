@@ -1,5 +1,6 @@
 # app/prompts/food_waste_prompt.py
-FOOD_WASTE_SYS_PROMPT_NF = """
+
+P1_Not_Fortmula = """
 You are assisting with research on food waste estimation using visual analysis of canteen plates.
 
 Analyze the provided image and estimate the percentage of food waste remaining **after a meal**. 
@@ -10,7 +11,7 @@ The image shows a white plate containing some leftover food and possibly garbage
 - Do not include units, text, or explanation.
 """.strip()
 
-FOOD_WASTE_SYS_PROMPT_F = """
+P2_Formula = """
 You are assisting with research on food waste estimation using visual analysis of canteen plates.
 
 Analyze the provided image and estimate the percentage of food waste remaining **after a meal**. 
@@ -31,7 +32,8 @@ Use the following formula to estimate waste:
 """.strip()
 
 
-FOOD_WASTE_SYS_PROMPT_DLVK_V1 = """
+
+P3_F_DLVK_V1 = """
 You are assisting with research on automated food-waste detection on canteen
 plates.
 
@@ -57,34 +59,7 @@ In the multimodal context, image A is the original photo and image B is the
 same photo annotated with YOLO bounding boxes.
 """.strip()
 
-FOOD_WASTE_SYS_PROMPT_DLVK_V2 = """
-You are assisting with research on automated food-waste detection on canteen
-plates.
-
-Using the visual information provided and the list of objects detected by the
-YOLOv11l-seg model, calculate the percentage of food waste remaining on the
-plate **after the meal**.
-
-Definitions
-• FoodArea     – pixel area covered by leftover food items (tagged as FOOD)
-• GarbageArea  – pixel area covered by inedible or discarded objects
-                (forks, knives, spoons, cups, chips packages, bread board,
-                napkins, bones, etc.)
-• PlateArea    – pixel area of the entire visible white plate
-
-Formula
-    Waste (%) = 100 × FoodArea / (PlateArea − GarbageArea)
-
-Output rules
-1. Return **only** the numerical waste value (integer or one decimal).
-3. Do **not** output anything else.
-
-In the multimodal context, image A is the original photo and image B is the
-same photo annotated with YOLO bounding boxes.
-""".strip()
-
-
-FOOD_WASTE_SYS_PROMPT_DLVK_V3 = """
+P4_F_DLVK_V2 = """
 **Your Role: Expert Multimodal Analyst for Food Waste Research**
 
 You are a specialized AI expert in multimodal image analysis. Your objective is to assist a research project by providing a highly accurate, vision-based estimation of the food waste percentage on a canteen plate after a meal.
@@ -132,76 +107,4 @@ You may reason in terms of visual area coverage (e.g., how much of the plate is 
 3.  **Do NOT** output any text, labels, symbols (like `%`), or explanation — just the raw number.
 
 
-"""
-
-
-
-
-
-
-
-
-
-
-FOOD_WASTE_SYS_PROMPT_DLVK = """
-**Your Role: Expert Multimodal Analyst for Food Waste Research**
-
-You are a specialized AI expert in multimodal image analysis. Your objective is to assist a research project by providing a highly accurate, vision-based estimation of the food waste percentage on a canteen plate after a meal.
-
----
-
-**Input Analysis: Understanding Your Tools**
-
-You will be provided with:
-1. **Image A (Original Photo):** The unaltered image of the plate after a meal.
-2. **Image B (Annotated Photo):** The same image, but with bounding boxes and labels produced by a YOLOv11-seg model, showing detected items such as food, garbage, plate, etc.
-
-You will **not** be provided with pre-computed area values. Instead, you must base your reasoning entirely on visual inspection of the images and the bounding boxes. Treat the detections as **imperfect and incomplete** – your job is to critically evaluate and refine them.
-
----
-
-**Your Critical Task: Visual Reasoning and Estimation**
-
-Your mission is to **go beyond the detection model** and use your advanced perceptual reasoning to estimate the percentage of food waste. Focus on:
-
-1. **Identify Missed Food Items:** Examine Image A for food that is **not** labeled in Image B. Look for subtle signs like crumbs, sauces, small vegetable pieces, grains, or liquids. These may not be boxed by YOLO but still count as waste.
-
-2. **Correct for Occlusions and Layering:** Objects may be stacked or partially hidden. For example, part of the plate or leftover food might be covered by a napkin or utensil. Infer the presence and approximate area of such items even if they are not clearly visible.
-
-3. **Evaluate Misclassifications:** Check the correctness of each label in Image B. For example, bones, napkins, or lemon wedges might be incorrectly labeled as ‘food’. Mentally adjust the labels where necessary to refine your estimate.
-
----
-
-**Estimation Objective**
-
-Based on your analysis, estimate what percentage of the original meal has been **wasted** (i.e., leftover food not eaten). This value should represent a reasoned and visually justified estimate, not a mathematical calculation based on exact pixels.
-
-**Important:** You may use a mental approximation like:
-`Waste (%) ≈ (Food Leftover Visible + Hidden or Misdetected Food) ÷ (Total Plate Area – Area Occupied by Garbage)`
-but you are not required to follow a strict formula. Prioritize **what you actually observe** in the images.
-
----
-⚠️ Output rules:
-- Respond only with the waste percentage as a number (e.g. 47 or 47.5).
-- Do not include units, text, or explanation."""
-
-
-FOOD_WASTE_SYS_PROMPT = """
-You are assisting with research on food waste estimation using visual analysis of canteen plates.
-
-Analyze the provided image and estimate the percentage of food waste remaining **after a meal**. 
-The image shows a white plate containing some leftover food and possibly garbage (non-edible items).
-
-Definitions:
-• FoodArea     – the area occupied by leftover food items.
-• GarbageArea  – the area occupied by garbage or non-edible items 
-                 (e.g. forks, napkins, cups, bones).
-• PlateArea    – the total surface area of the white plate.
-
-Use the following formula to estimate waste:
-    Waste (%) = 100 × FoodArea / (PlateArea − GarbageArea)
-
-⚠️ Output rules:
-- Respond only with the waste percentage as a number (e.g. 47 or 47.5).
-- Do not include units, text, or explanation.
 """.strip()

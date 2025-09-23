@@ -5,7 +5,7 @@ from fastapi import status
 from fastapi.responses import JSONResponse
 
 from app.core.middleware import ConcurrencyLimiterMiddleware
-from app.api import predict, config
+from app.api import predict, config, prompts
 
 from app.core.app_state import inizialize_app_state
 app = FastAPI()
@@ -23,7 +23,8 @@ app.add_middleware(ConcurrencyLimiterMiddleware, max_concurrent=50)
 # Routers
 app.include_router(predict.router, prefix="/api/predict", tags=["predict"])
 app.include_router(config.router, prefix="/api/config", tags=["config"])
-
+app.include_router(prompts.router,prefix="/api/prompts",tags=["prompts"]
+                   )
 # --- Health-check ----------------------------------------------------------
 @app.get("/healthcheck", status_code=status.HTTP_200_OK, tags=["health"])
 async def healthcheck():

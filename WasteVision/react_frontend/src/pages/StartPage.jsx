@@ -43,6 +43,9 @@ const StartPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [objectUrl, setObjectUrl] = useState(null);
+  // prompt selezionato da PaperPrompts
+  const [selectedPromptName, setSelectedPromptName] = useState(null);
+
 
 
   const fileInputRef = useRef(null);
@@ -162,7 +165,11 @@ const StartPage = () => {
   };
 
   //img  upload
-  
+  const handleSelectPrompt = (p) => {
+    setSelectedPromptName(p.label);
+    setPrompt(p.text); // mostra il testo del prompt scelto nella textarea
+  };
+
 
   const handleDetect = async () => {
     if (!selectedFile) {
@@ -297,7 +304,8 @@ const StartPage = () => {
                 <span className={cardStyles.icon}><Terminal /></span>
                 <span className={cardStyles.text}>Prompt</span>
               </a>
-              <PaperPrompts />
+              {/* Menu dinamic */}
+              <PaperPrompts selectedLabel={selectedPromptName} onSelect={handleSelectPrompt} />
             </div>
           }
           className={cardStyles.card_prompt}
@@ -310,6 +318,7 @@ const StartPage = () => {
             onChange={handlePromptChange}
           />
         </Card>
+
       </div>
 
       <div className={styles.content}>

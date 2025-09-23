@@ -5,7 +5,7 @@ from openai import OpenAI
 
 from app.models.base import BaseMultimodalModel
 from app.utils.yolo_utils import call_yolo, format_detected
-from app.prompts.food_waste_prompt import FOOD_WASTE_SYS_PROMPT_DLVK as _SYS_PROMPT
+from app.prompts.food_waste_prompt import P4_F_DLVK_V2 as _SYS_PROMPT
 
 
 

@@ -2,7 +2,7 @@ import os
 import json
 from app.type.models import ModelConfig
 from app.config import CONFIG_PATH
-from app.prompts.food_waste_prompt import FOOD_WASTE_SYS_PROMPT
+from app.prompts.food_waste_prompt import P4_F_DLVK_V2 as _SYS_PROMPT
 class AppState:
     config: ModelConfig | None = None
 
@@ -25,7 +25,7 @@ async def inizialize_app_state():
 
 def save_app_config(config: ModelConfig):
     if not config.prompt:
-        config.prompt = FOOD_WASTE_SYS_PROMPT
+        config.prompt = _SYS_PROMPT
 
     os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:

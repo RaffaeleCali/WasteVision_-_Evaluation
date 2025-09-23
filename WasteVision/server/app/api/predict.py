@@ -5,7 +5,7 @@ from app.core.app_state import get_current_config
 from app.models.interface import get_model_from_config
 import tempfile
 import shutil
-from app.prompts.food_waste_prompt import FOOD_WASTE_SYS_PROMPT
+from app.prompts.food_waste_prompt import P4_F_DLVK_V2 as _SYS_PROMPT
 
 
 
@@ -25,7 +25,7 @@ async def predict_image(image: UploadFile = File(...)):
         shutil.copyfileobj(image.file, f)
 
     model = get_model_from_config(config)
-    prompt = config.prompt or FOOD_WASTE_SYS_PROMPT
+    prompt = config.prompt or _SYS_PROMPT
     #print(f" Prompt: {prompt}", flush=True)
     result = model.generate_from_image(temp_path, prompt=prompt)
     print(f"Result: {result}", flush=True)

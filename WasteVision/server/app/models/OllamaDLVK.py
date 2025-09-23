@@ -3,7 +3,7 @@ import requests
 from typing import List, Dict, Any
 from app.models.base import BaseMultimodalModel
 from app.utils.yolo_utils import call_yolo, format_detected
-from app.prompts.food_waste_prompt import FOOD_WASTE_SYS_PROMPT_DLVK as sys_prompt
+from app.prompts.food_waste_prompt import P4_F_DLVK_V2 as _SYS_PROMPT
 
 
 class OllamaYoloModel(BaseMultimodalModel):
@@ -28,7 +28,7 @@ class OllamaYoloModel(BaseMultimodalModel):
         ann_b64 = yolo_res.get("image")
 
         full_prompt = (
-            f"{sys_prompt}\n\n"
+            f"{_SYS_PROMPT}\n\n"
             "Detected objects:\n"
             f"{format_detected(detected)}\n\n"
             f"{prompt}"
