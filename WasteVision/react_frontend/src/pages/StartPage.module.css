@@ -15,3 +15,7 @@
 .header .title {
     @apply text-white text-base md:text-2xl font-normal px-4;
 }
+
+.select_container {
+    @apply w-full md:w-1/3;
+}

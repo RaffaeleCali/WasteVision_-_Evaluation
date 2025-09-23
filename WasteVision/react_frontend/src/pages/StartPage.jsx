@@ -4,6 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import styles from './StartPage.module.css';
 import cardStyles from '../components/Card.module.css';
 import Card from '../components/Card';
+import PaperPrompts from '../components/PaperPrompts';
 import { Image, ImageUp, Brackets, ScanText, Terminal, PenLine, Waypoints, MonitorCog } from 'lucide-react';
 
 // === Platform → Models mapping ===
@@ -296,11 +297,7 @@ const StartPage = () => {
                 <span className={cardStyles.icon}><Terminal /></span>
                 <span className={cardStyles.text}>Prompt</span>
               </a>
-              <div className={cardStyles.select_container}>
-                <button className={cardStyles.button} onClick={loadDefaultPrompt}>
-                  Load default prompt
-                </button>
-              </div>
+              <PaperPrompts />
             </div>
           }
           className={cardStyles.card_prompt}
