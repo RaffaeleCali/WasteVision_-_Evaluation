@@ -1,0 +1,83 @@
+@reference "tailwindcss";
+
+.menuContainer {
+    position: relative;
+    display: inline-block;
+    @apply w-full md:w-fit;
+}
+
+.menuButton {
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+    gap: 0.575rem;
+    @apply bg-[#6466F1] rounded-3xl text-center text-white text-base font-normal px-4 px-1 py-2 md:px-4 md:py-2 outline-none ring-0 border-0 cursor-pointer mt-2 md:mt-0
+    !w-full;
+}
+
+.menuButton:hover {
+    background-color: #4f52e8;
+    @apply transition-all duration-300 ease-in-out;
+}
+
+.chevronIcon {
+    margin-right: -0.25rem;
+    height: 1.25rem;
+    width: 1.25rem;
+    color: rgb(255, 255, 255);
+}
+
+.menuItems {
+    position: absolute;
+    right: 0px;
+    z-index: 10;
+    margin-top: 0.5rem;
+    width: 14rem;
+    transform-origin: top right;
+    border-radius: 0.375rem;
+    outline-width: 1px;
+    outline-offset: -1px;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    @apply bg-[#6466F1] shadow-lg no-underline;
+}
+
+.menuItems[data-closed=''] {
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+.menuItems[data-enter=''] {
+    transition-duration: 100ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.menuItems[data-leave=''] {
+    transition-duration: 75ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.menuItemSection {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.555);
+}
+
+.menuItemLink {
+    display: block;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgb(209, 213, 219);
+    @apply no-underline;
+}
+
+.menuItemLinkFocus {
+    color: white;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
