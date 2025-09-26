@@ -1,8 +1,8 @@
 # app/models/factory.py
-from app.type.models import ModelConfig
+from app.type.models import PredictConfig
 from app.models.base import BaseMultimodalModel
 
-def get_model_from_config(cfg: ModelConfig) -> BaseMultimodalModel:
+def get_model_from_config(cfg: PredictConfig) -> BaseMultimodalModel:
     """Restituisce l’istanza del modello corretto, supportando Google, OpenAI e Ollama."""
 
     match cfg.host:
@@ -17,7 +17,7 @@ def get_model_from_config(cfg: ModelConfig) -> BaseMultimodalModel:
             if cfg.dlvk:
                 from app.models.OpenAIDLVK import OpenAIYoloModel
                 return OpenAIYoloModel(cfg.model, cfg.api_key)
-            from app.models.openai_model import OpenAIModel
+            from app.models.Openai_model import OpenAIModel
             return OpenAIModel(cfg.model, cfg.api_key)
 
         case "ollama":

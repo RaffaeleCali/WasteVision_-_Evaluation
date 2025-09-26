@@ -6,6 +6,7 @@ from google import genai
 from app.models.base import BaseMultimodalModel
 from app.utils.yolo_utils import call_yolo,format_detected, b64_to_temp_file
 from app.prompts.food_waste_prompt import P4_F_DLVK_V2 as _SYS_PROMPT
+from google.genai.types import GenerateContentConfig
 
 
 
@@ -16,7 +17,7 @@ class GoogleGeminiYoloModel(BaseMultimodalModel):
         self.yolo_url = yolo_url
         self.last_detected_classes: List[Dict[str, Any]] | None = None
 
-    def generate_from_image(self, image_path: str, prompt: str) -> str:
+    def generate_from_image(self, image_path: str, prompt: str,**kwargs) -> str:
         # 1) YOLO
         yolo_res = call_yolo(image_path, self.yolo_url)
         detected = yolo_res.get("detected_classes", [])
@@ -39,9 +40,11 @@ class GoogleGeminiYoloModel(BaseMultimodalModel):
 
         contents.append(full_prompt)
         print("----------full_prompt", textwrap.fill(full_prompt, 80), flush=True)
+        config = GenerateContentConfig(**kwargs)
 
         response = self.client.models.generate_content(
             model=self.model_name,
             contents=contents,
+            config=config
         )
         return response.text

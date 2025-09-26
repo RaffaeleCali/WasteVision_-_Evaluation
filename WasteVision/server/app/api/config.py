@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.core.app_state import get_current_config, save_app_config
-from app.type.models import ModelConfig
+from app.type.models import PredictConfig
 
 router = APIRouter()
 
@@ -10,6 +10,6 @@ async def load_config():
     return config.model_dump() if config else None
 
 @router.post("")
-async def update_config(config: ModelConfig):
+async def update_config(config: PredictConfig):
     save_app_config(config)
     return {"message": "Configurazione salvata"}

@@ -21,7 +21,7 @@ class OllamaYoloModel(BaseMultimodalModel):
         with open(path, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
 
-    def generate_from_image(self, image_path: str, prompt: str) -> str:
+    def generate_from_image(self, image_path: str, prompt: str,**kwargs) -> str:
         # 1) YOLO detection
         yolo_res = call_yolo(image_path, self.yolo_url)
         detected = yolo_res.get("detected_classes", [])
@@ -47,6 +47,7 @@ class OllamaYoloModel(BaseMultimodalModel):
             "prompt": full_prompt,
             "images": images,
             "stream": False,
+            **kwargs
         }
         
         # 4) POST a Ollama

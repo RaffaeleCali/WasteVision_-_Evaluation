@@ -1,5 +1,6 @@
 import os
 from app.models.base import BaseMultimodalModel
+from google.genai.types import GenerateContentConfig
 
 from google import genai
 
@@ -8,11 +9,14 @@ class GoogleGeminiModel(BaseMultimodalModel):
         self.client = genai.Client(api_key=api_key)
         self.model_name = model_name
 
-    def generate_from_image(self, image_path: str, prompt: str) -> str:
+    def generate_from_image(self, image_path: str, prompt: str,**kwargs) -> str:
         print("----------prompt", prompt,flush=True)
         uploaded_file = self.client.files.upload(file=image_path)
+        config = GenerateContentConfig(**kwargs)
+
         response = self.client.models.generate_content(
             model=self.model_name,
             contents=[uploaded_file, prompt],
+            config=config
         )
         return response.text

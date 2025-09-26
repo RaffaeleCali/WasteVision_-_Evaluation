@@ -16,7 +16,7 @@ const HOST_LABELS = {
 };
 
 const MODELS_BY_HOST = {
-  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-5-2025-08-07'], // aggiorna a piacere
+  openai: ['gpt-5', 'gpt-4o', 'gpt-5-2025-08-07'], // aggiorna a piacere
   google: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-1.5-pro'],
   ollama: ['llava:1.6', 'qwen2.5:7b', 'qwen3:8b-q8_0'],
 };
@@ -46,6 +46,16 @@ const StartPage = () => {
   const [objectUrl, setObjectUrl] = useState(null);
   // prompt selezionato da PaperPrompts
   const [selectedPromptName, setSelectedPromptName] = useState(null);
+
+
+  // Nessun default: lasciamo vuoto. Sarà il backend a decidere i default reali.
+  const [llmParams, setLlmParams] = useState({});
+  // Conserveremo qui SOLO i campi toccati dall’utente (il “patch”)
+  const [llmParamsPatch, setLlmParamsPatch] = useState({});
+
+
+
+  const [dlvk, setDlvk] = useState(false);
 
 
 
@@ -186,8 +196,15 @@ const StartPage = () => {
 
     const formData = new FormData();
     formData.append('image', selectedFile);
-
-    setLoading(true);
+    formData.append("config_json", JSON.stringify({
+      host: platform,
+      model,
+      api_key: apiKey || null,
+      prompt: prompt || null,
+      dlvk: dlvk || false,
+      params: llmParamsPatch,   
+    }));
+    //setLoading(true);
     try {
       const res = await fetch('/api/predict', {
         method: 'POST',
@@ -201,7 +218,7 @@ const StartPage = () => {
       }
 
       const data = await res.json();
-
+      
       // compat: prova più campi possibili
       const text =
         data.output ??
@@ -218,6 +235,7 @@ const StartPage = () => {
 
       setOutput(text || '');
       setDetectionImage(vis || null);
+      setLlmParamsPatch({});
       toast.success('Prediction completed!');
     } catch (err) {
       console.error('Error during prediction:', err);
@@ -232,6 +250,13 @@ const StartPage = () => {
         setObjectUrl(url);
       }
     }
+  };
+   const handleParamsPatch = (patch) => {
+    if (!patch || Object.keys(patch).length === 0) return;
+    // Aggiorno la UI locale 
+    setLlmParams(prev => ({ ...prev, ...patch }));
+    // Salvo il SOLO diff da inviare al backend
+    setLlmParamsPatch(patch);
   };
 
   return (
@@ -350,6 +375,18 @@ const StartPage = () => {
 
         <Card title="Actions" icon={<Waypoints />}>
           <div className={cardStyles.actions}>
+            {/* ✅ Toggle DLVK */}
+            <label className={cardStyles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={dlvk}
+                onChange={(e) => setDlvk(e.target.checked)}
+                className={cardStyles.input}
+              />
+              Use DLVK
+            </label>
+
+
             <button
               className={cardStyles.button}
               onClick={handleDetect}
@@ -371,7 +408,7 @@ const StartPage = () => {
             <button className={cardStyles.button} onClick={loadLastConfig}>
               Load last config
             </button>
-            <ConfigModal />
+            <ConfigModal value={llmParams} onChange={handleParamsPatch}/>
           </div>
         </Card>
       </div>

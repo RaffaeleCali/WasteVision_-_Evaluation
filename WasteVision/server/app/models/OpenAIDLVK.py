@@ -22,7 +22,7 @@ class OpenAIYoloModel(BaseMultimodalModel):
 
     # --------------------------------------------------------------- #
 
-    def generate_from_image(self, image_path: str, prompt: str) -> str:
+    def generate_from_image(self, image_path: str, prompt: str,**kwargs) -> str:
         # 1) YOLO
         yolo_res = call_yolo(image_path, self.yolo_url)
         detected: List[Dict[str, Any]] = yolo_res.get("detected_classes", [])
@@ -62,7 +62,6 @@ class OpenAIYoloModel(BaseMultimodalModel):
         response = self.client.chat.completions.create(
             model=self.model_name,
             messages=[sys_msg, {"role": "user", "content": user_content}],
-            max_tokens=32,
-            temperature=0,
+            **kwargs
         )
         return response.choices[0].message.content.strip()

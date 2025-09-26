@@ -1,10 +1,10 @@
 import os
 import json
-from app.type.models import ModelConfig
+from app.type.models import PredictConfig
 from app.config import CONFIG_PATH
 from app.prompts.food_waste_prompt import P4_F_DLVK_V2 as _SYS_PROMPT
 class AppState:
-    config: ModelConfig | None = None
+    config: PredictConfig | None = None
 
 app_state = AppState()
 
@@ -16,14 +16,14 @@ async def inizialize_app_state():
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             try:
                 cfg_dict = json.load(f)
-                app_state.config = ModelConfig(**cfg_dict)
+                app_state.config = PredictConfig(**cfg_dict)
             except json.JSONDecodeError:
                 print("⚠️ Errore nel parsing del file di configurazione. Ignorato.")
     else:
         print("⚠️ Nessuna configurazione trovata.")
 
 
-def save_app_config(config: ModelConfig):
+def save_app_config(config: PredictConfig):
     if not config.prompt:
         config.prompt = _SYS_PROMPT
 
@@ -33,5 +33,5 @@ def save_app_config(config: ModelConfig):
         json.dump(config.model_dump(), f, indent=2)
     app_state.config = config
 
-def get_current_config() -> ModelConfig | None:
+def get_current_config() -> PredictConfig | None:
     return app_state.config

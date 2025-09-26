@@ -1,181 +1,133 @@
-import { useState } from 'react'
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { useEffect, useRef, useState } from 'react'
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import Styles from './ConfigModal.module.css'
+import cardStyles from '../components/Card.module.css'
+import Card from '../components/Card'
+import { Cog } from 'lucide-react'
 
-import cardStyles from '../components/Card.module.css';
-import Card from '../components/Card';
-import { Cog, ImageUp } from 'lucide-react';
-
-export default function ConfigModal() {
+export default function ConfigModal({ value, onChange }) {
   const [open, setOpen] = useState(false)
-  
-  const [temperature, setTemperature] = useState(1.0)
-  const [maxTokens, setMaxTokens] = useState(1024)
-  const [presencePenalty, setPresencePenalty] = useState(0.0)
-  const [frequencyPenalty, setFrequencyPenalty] = useState(0.0)
+  const [local, setLocal] = useState({})
+  const initialRef = useRef(value || {})
+  const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
 
-  const [topP, setTopP] = useState(1.0)
-  const [topK, setTopK] = useState(50)  
-  const [useDlvk, setUseDlvk] = useState(false)
+  useEffect(() => {
+    if (open) {
+      setLocal({})
+      initialRef.current = value || {}
+    }
+  }, [open, value])
+
+  const setField = (k, v) => setLocal(prev => ({ ...prev, [k]: v }))
+  const view = (k) => (k in local) ? local[k] : initialRef.current?.[k]
+
+  const handleSave = () => {
+    const patch = { ...local }
+    // Se un campo toccato è tornato uguale all’iniziale, non inviarlo
+    for (const k of Object.keys(patch)) {
+      if (Object.is(patch[k], initialRef.current[k])) delete patch[k]
+    }
+    onChange(patch)      // SOLO modificati
+    setOpen(false)
+  }
 
   return (
     <div>
-      <button
-        onClick={() => setOpen(true)}
-        className={Styles.openButton}
-      >
+      <button onClick={() => setOpen(true)} className={Styles.openButton}>
         Settings
       </button>
-      <Dialog open={open} onClose={setOpen} className="relative z-10">
-        <DialogBackdrop
-          transition
-          className={Styles.dialogBackdrop}
-        />
-
+      <Dialog open={open} onClose={() => {}} className="relative z-10">
+        <DialogBackdrop transition className={Styles.dialogBackdrop} />
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <DialogPanel
-              transition
-              className={Styles.dialogPanel}
-            >
+          <div className="flex min-h-full items-end justify-center p-4 sm:items-center sm:p-0">
+            <DialogPanel className={Styles.dialogPanel}>
               <Card title="Settings" className={cardStyles.card_full} icon={<Cog />}>
-                <div className={cardStyles.form_group_row}>
-                  <div className={cardStyles.form_group_column}>
-                    <div className={cardStyles.form_group}>
-                      <label htmlFor="temperature" className={cardStyles.form_label}>
-                      Temperature (0.0 - 2.0)
-                      </label>
-                      <div className={cardStyles.slider_center}>
-                        <input
-                          id="temperature"
-                          name="temperature"
-                          type="range"
-                          min={0.0}
-                          max={2.0}
-                          step={0.01}
-                          value={temperature}
-                          onChange={e => setTemperature(parseFloat(e.target.value))}
-                          className={cardStyles.input}
-                        />
-                        <span>{temperature.toFixed(2)}</span>
-                      </div>
-                    </div>
 
-                    <div className={cardStyles.form_group}>
-                      <label htmlFor="top_p" className={cardStyles.form_label}>
-                      Top P (0.0 - 1.0)
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="top_p"
-                          name="top_p"
-                          type="text"
-                          value={topP} 
-                          onChange={e => setTopP(e.target.value)} 
-                          className={cardStyles.input}
-                        />
-                      </div>
-                    </div>
-
-                    <div className={cardStyles.form_group}>
-                      <label htmlFor="top_k" className={cardStyles.form_label}>
-                      Top K (1 - ∞)
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="top_k"
-                          name="top_k"
-                          type="text"
-                          value={topK} 
-                          onChange={e => setTopK(e.target.value)} 
-                          className={cardStyles.input}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={cardStyles.form_group_column}>
-                    <div className={cardStyles.form_group}>
-                      <label htmlFor="max_tokens" className={cardStyles.form_label}>
-                      Max Tokens (1 - context limit)
-                      </label>
-                      <div className={cardStyles.slider_center}>
-                      <input
-                          id="max_tokens"
-                          name="max_tokens"
-                          type="range"
-                          min={1}
-                          max={8192}
-                          step={1}
-                          value={maxTokens}
-                          onChange={e => setMaxTokens(parseInt(e.target.value))}
-                          className={cardStyles.input}
-                      />
-                      <span>{maxTokens}</span>
-                      </div>
-                    </div>
-
-                    <div className={cardStyles.form_group}>
-                      <label htmlFor="presence_penalty" className={cardStyles.form_label}>
-                      Presence Penalty (-2.0 - 2.0)
-                      </label>
-                      <div className={cardStyles.slider_center}>
-                      <input
-                          id="presence_penalty"
-                          name="presence_penalty"
-                          type="range"
-                          min={-2.0}
-                          max={2.0}
-                          step={0.01}
-                          value={presencePenalty}
-                          onChange={e => setPresencePenalty(parseFloat(e.target.value))}
-                          className={cardStyles.input}
-                      />
-                      <span>{presencePenalty.toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    <div className={cardStyles.form_group}>
-                      <label htmlFor="frequency_penalty" className={cardStyles.form_label}>
-                      Frequency Penalty (-2.0 - 2.0)
-                      </label>
-                      <div className={cardStyles.slider_center}>
-                      <input
-                          id="frequency_penalty"
-                          name="frequency_penalty"
-                          type="range"
-                          min={-2.0}
-                          max={2.0}
-                          step={0.01}
-                          value={frequencyPenalty}
-                          onChange={e => setFrequencyPenalty(parseFloat(e.target.value))}
-                          className={cardStyles.input}
-                      />
-                      <span>{frequencyPenalty.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className={cardStyles.form_group_row}>
-                  <label htmlFor="dlvk" className={cardStyles.form_label}>
-                    <input
-                      id="dlvk"
-                      name="dlvk"
-                      type="checkbox"
-                      checked={useDlvk}
-                      onChange={e => setUseDlvk(e.target.checked)}
-                      className={cardStyles.input}
-                    />
-                    Use DLVK 
-                  </label>
+                {/* Temperature */}
+                <div className={cardStyles.form_group}>
+                  <label className={cardStyles.form_label}>Temperature</label>
+                  <input
+                    type="range" min={0} max={2} step={0.01}
+                    defaultValue={value?.temperature}
+                    onChange={e => setField('temperature', parseFloat(e.target.value))}
+                  />
+                  <span>{view('temperature') !== undefined ? view('temperature').toFixed(2) : '—'}</span>
                 </div>
 
-                <div className={cardStyles.form_group_row}>
-                  <button className={cardStyles.button} onClick={() => setOpen(false)}>
-                    Close
-                  </button>
+                {/* Top P */}
+                <div className={cardStyles.form_group}>
+                  <label className={cardStyles.form_label}>Top P</label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    defaultValue={value?.top_p}
+                    onChange={e => setField('top_p', parseFloat(e.target.value))}
+                  />
+                  <span>
+                    {view('top_p') !== undefined ? Number(view('top_p')).toFixed(2) : '—'}
+                  </span>
+                </div>
+
+                {/* Top K */}
+                <div className={cardStyles.form_group}>
+                  <label className={cardStyles.form_label}>Top K</label>
+                  <input
+                    type="number" min={1}
+                    defaultValue={value?.top_k}
+                    onChange={e => setField('top_k', parseInt(e.target.value))}
+                  />
+                </div>
+
+                {/* Max tokens */}
+                <div className={cardStyles.form_group}>
+                  <label className={cardStyles.form_label}>Max Tokens</label>
+                  <input
+                    type="number"
+                    min={1}
+                  //  max={8192}         
+                    step={1}
+                    defaultValue={value?.max_tokens}
+                    onChange={e => {
+                      const raw = e.target.value;
+                      const n = parseInt(raw, 10);
+                      if (Number.isFinite(n)) {
+                        // evita negativi/zero e limiti oltre max
+                        setField('max_tokens', clamp(n, 1, 8192));
+                      }
+                      // se l’utente svuota il campo, NON settiamo nulla:
+                      // così non inviamo un patch "vuoto" o NaN.
+                    }}
+                  />
+                  <span>{view('max_tokens') ?? '—'}</span>
+                </div>
+
+                {/* Presence penalty */}
+                <div className={cardStyles.form_group}>
+                  <label className={cardStyles.form_label}>Presence Penalty</label>
+                  <input
+                    type="range" min={-2} max={2} step={0.01}
+                    defaultValue={value?.presence_penalty}
+                    onChange={e => setField('presence_penalty', parseFloat(e.target.value))}
+                  />
+                  <span>{view('presence_penalty') !== undefined ? view('presence_penalty').toFixed(2) : '—'}</span>
+                </div>
+
+                {/* Frequency penalty */}
+                <div className={cardStyles.form_group}>
+                  <label className={cardStyles.form_label}>Frequency Penalty</label>
+                  <input
+                    type="range" min={-2} max={2} step={0.01}
+                    defaultValue={value?.frequency_penalty}
+                    onChange={e => setField('frequency_penalty', parseFloat(e.target.value))}
+                  />
+                  <span>{view('frequency_penalty') !== undefined ? view('frequency_penalty').toFixed(2) : '—'}</span>
+                </div>
+
+                <div className={cardStyles.actions}>
+                  <button className={cardStyles.button} onClick={() => setOpen(false)}>Close</button>
+                  <button className={cardStyles.button} onClick={handleSave}>Save</button>
                 </div>
               </Card>
             </DialogPanel>

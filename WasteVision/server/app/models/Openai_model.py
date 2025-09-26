@@ -7,7 +7,7 @@ class OpenAIModel(BaseMultimodalModel):
         self.client = OpenAI(api_key=api_key)
         self.model_name = model_name
 
-    def generate_from_image(self, image_path: str, prompt: str) -> str:
+    def generate_from_image(self, image_path: str, prompt: str,**kwargs) -> str:
         with open(image_path, "rb") as f:
             base64_image = base64.b64encode(f.read()).decode("utf-8")
 
@@ -27,7 +27,7 @@ class OpenAIModel(BaseMultimodalModel):
                     ]
                 }
             ],
-            max_tokens=100,
+            **kwargs
         )
 
         return response.choices[0].message.content

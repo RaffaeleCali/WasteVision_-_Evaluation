@@ -8,7 +8,7 @@ class OllamaModel(BaseMultimodalModel):
         self.model_name = model_name
         self.api_url = "http://ollama:11434/api/generate"
 
-    def generate_from_image(self, image_path: str, prompt: str) -> str:
+    def generate_from_image(self, image_path: str, prompt: str,**kwargs) -> str:
         #print("----------prompt", prompt, flush=True)
         try:
             with open(image_path, "rb") as f:
@@ -18,7 +18,8 @@ class OllamaModel(BaseMultimodalModel):
                 "model": self.model_name,  # e.g. "llava:v1.6"
                 "prompt": prompt,
                 "images": [base64_image],
-                "stream": False
+                "stream": False,
+                **kwargs
             }
             print("OllamaModel: prompt", prompt, flush=True)
             response = requests.post(self.api_url, json=payload)
