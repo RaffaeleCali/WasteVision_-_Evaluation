@@ -64,4 +64,8 @@ class OpenAIYoloModel(BaseMultimodalModel):
             messages=[sys_msg, {"role": "user", "content": user_content}],
             **kwargs
         )
-        return response.choices[0].message.content.strip()
+        return {
+            "text":  response.choices[0].message.content.strip(),          # risposta LLM
+            "segmented_image": ann_b64,     # <-- base64 dell'overlay YOLO
+            # "detection_image": ...        
+        }

@@ -47,4 +47,8 @@ class GoogleGeminiYoloModel(BaseMultimodalModel):
             contents=contents,
             config=config
         )
-        return response.text
+        return {
+            "text": response.text,          # risposta LLM
+            "segmented_image": ann_b64,     # <-- base64 dell'overlay YOLO
+            # "detection_image": ...        
+        }

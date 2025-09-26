@@ -57,6 +57,24 @@ const StartPage = () => {
 
   const [dlvk, setDlvk] = useState(false);
 
+  // seconda immagine (es. segmentazione/overlay) opzionale
+  const [segmentationImage, setSegmentationImage] = useState(null);
+
+// converte in qualcosa che <img> può usare
+  const toDisplayableImage = (img) => {
+    if (!img) return null;
+    if (typeof img === 'string') {
+      if (img.startsWith('data:') || img.startsWith('http')) return img;
+      // se è base64 "nudo"
+      return `data:image/png;base64,${img}`;
+    }
+    // forma { base64, mime? }
+    if (img && typeof img === 'object' && img.base64) {
+      const mime = img.mime || 'image/png';
+      return `data:${mime};base64,${img.base64}`;
+    }
+    return null;
+  };
 
 
   const fileInputRef = useRef(null);
@@ -218,25 +236,50 @@ const StartPage = () => {
       }
 
       const data = await res.json();
-      
-      // compat: prova più campi possibili
-      const text =
-        data.output ??
-        data.text ??
-        data.answer ??
-        data.result ??
-        (typeof data === 'string' ? data : JSON.stringify(data, null, 2));
+      console.log("PREDICT RESPONSE", data); // <-- utile per verificare
 
-      const vis =
+      // se result è un oggetto, lo uso; altrimenti null
+      const resultObj =
+        data && typeof data.result === "object" && data.result !== null
+          ? data.result
+          : null;
+
+      // testo: prendo la prima stringa disponibile
+      const textCandidates = [
+        data.output,
+        data.text,
+        data.answer,
+        resultObj?.output,
+        resultObj?.text,
+        resultObj?.answer,
+        typeof data.result === "string" ? data.result : null,
+      ];
+      const firstString = textCandidates.find((v) => typeof v === "string" && v.trim().length > 0);
+      const text = firstString ?? JSON.stringify(data, null, 2);
+
+      // immagini: YOLO overlay e (opzionale) segmentazione
+      const detRaw =
+        resultObj?.detection_image ??
+        resultObj?.image ??
         data.detection_image ??
-        data.segmented_image ??
         data.image ??
         null;
+      const segRaw =
+        resultObj?.segmented_image ??
+        resultObj?.segmentation_image ??
+        data.segmented_image ??
+        data.segmentation_image ??
+        null;
 
-      setOutput(text || '');
-      setDetectionImage(vis || null);
+      const detUri = toDisplayableImage(detRaw);
+      const segUri = toDisplayableImage(segRaw);
+
+      setOutput(text || "");
+      setDetectionImage(detUri || null);
+      setSegmentationImage(segUri || null);
       setLlmParamsPatch({});
-      toast.success('Prediction completed!');
+      toast.success("Prediction completed!");
+
     } catch (err) {
       console.error('Error during prediction:', err);
       toast.error(err.message || 'Error during prediction.');
@@ -351,13 +394,8 @@ const StartPage = () => {
         <Card title="Detection Output" icon={<Image />}>
           <div className={cardStyles.row}>
             <div className={cardStyles.image}>
-              {detectionImage ? (
-                <img src={detectionImage} alt="Detected image" className={cardStyles.image} />
-              ) : ('Detection')}
-            </div>
-            <div className={cardStyles.image}>
-              {detectionImage ? (
-                <img src={detectionImage} alt="Detected image" className={cardStyles.image} />
+              {segmentationImage ? (
+                <img src={segmentationImage} alt="Segmentation" className={cardStyles.image} />
               ) : ('Segmentation')}
             </div>
           </div>

@@ -32,6 +32,11 @@ async def predict_image(image: UploadFile = File(...), config_json: str = Form(.
         print("selected keys for LLM parameters:", keys_selected, flush=True)
         provider_params = normalize_params(cfg.host, cfg.params)
         result = model.generate_from_image(temp_path, prompt, **provider_params)
+        if isinstance(result, str):
+            result = {"text": result}
+
         return JSONResponse(content={"result": result})
+
+
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

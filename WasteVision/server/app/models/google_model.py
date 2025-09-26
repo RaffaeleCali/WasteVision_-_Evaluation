@@ -19,4 +19,5 @@ class GoogleGeminiModel(BaseMultimodalModel):
             contents=[uploaded_file, prompt],
             config=config
         )
+        
         return response.text
