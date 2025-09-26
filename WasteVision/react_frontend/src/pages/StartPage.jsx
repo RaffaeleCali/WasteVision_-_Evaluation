@@ -5,6 +5,7 @@ import styles from './StartPage.module.css';
 import cardStyles from '../components/Card.module.css';
 import Card from '../components/Card';
 import PaperPrompts from '../components/PaperPrompts';
+import ConfigModal from '../components/ConfigModal';
 import { Image, ImageUp, Brackets, ScanText, Terminal, PenLine, Waypoints, MonitorCog } from 'lucide-react';
 
 // === Platform → Models mapping ===
@@ -370,6 +371,7 @@ const StartPage = () => {
             <button className={cardStyles.button} onClick={loadLastConfig}>
               Load last config
             </button>
+            <ConfigModal />
           </div>
         </Card>
       </div>

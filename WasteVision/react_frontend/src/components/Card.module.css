@@ -4,6 +4,10 @@
     @apply bg-white p-2 md:p-4 rounded-4xl min-w-0 md:min-w-[14rem] min-h-[17rem] md:max-h-[17rem] w-full md:w-fit flex flex-col gap-3;
 }
 
+.card_full {
+    @apply bg-white p-2 md:p-4 rounded-4xl md:max-h-fit w-full flex flex-col gap-3;
+}
+
 .card_prompt {
     @apply w-full h-full max-w-[30rem] rounded-3xl p-4 text-gray-700 overflow-hidden;
 }
@@ -106,4 +110,24 @@
 
 .input {
     @apply border border-[#6466F1] rounded-3xl p-2 mx-3 text-gray-700;
+}
+
+.form_group {
+    @apply sm:col-span-4 my-1;
+}
+
+.form_group_row {
+    @apply sm:col-span-4 my-1 flex flex-col md:flex-row gap-4;
+}
+
+.form_group_column {
+    @apply sm:col-span-4 my-1 flex flex-col gap-2;
+}
+
+.form_label {
+    @apply block text-sm/6 font-medium text-gray-700 ml-3 mb-1;
+}
+
+.slider_center {
+    @apply mt-2 flex items-center gap-2;
 }
