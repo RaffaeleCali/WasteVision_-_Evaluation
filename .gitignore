@@ -2,4 +2,6 @@
 /WasteVision/react_frontend/node_modules
 /WasteVision/terraform/*
 
-!/WasteVision/terraform/main.tf
+!/WasteVision/terraform/main.tf**/.env
+.env
+.env.*
