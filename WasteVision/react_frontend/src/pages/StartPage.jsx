@@ -1,5 +1,5 @@
 // StartPage.jsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import styles from './StartPage.module.css';
 import cardStyles from '../components/Card.module.css';
@@ -15,14 +15,7 @@ const HOST_LABELS = {
   ollama: 'Ollama',
 };
 
-const MODELS_BY_HOST = {
-  openai: ['gpt-5', 'gpt-4o', 'gpt-5-2025-08-07'], // aggiorna a piacere
-  google: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-1.5-pro'],
-  ollama: ['llava:1.6', 'qwen2.5:7b', 'qwen3:8b-q8_0'],
-};
-
 const DEFAULT_HOST = 'google'; // di default Google 
-const DEFAULT_MODEL = MODELS_BY_HOST[DEFAULT_HOST][0];
 
 const StartPage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -30,7 +23,8 @@ const StartPage = () => {
 
   // === NEW: platform first, then models ===
   const [platform, setPlatform] = useState(DEFAULT_HOST); // 'google' | 'openai' | 'ollama'
-  const [model, setModel] = useState(DEFAULT_MODEL);
+
+  const [model, setModel] = useState("");
 
   const [prompt, setPrompt] = useState('');
   const [output, setOutput] = useState('');
@@ -53,10 +47,42 @@ const StartPage = () => {
   // Conserveremo qui SOLO i campi toccati dall’utente (il “patch”)
   const [llmParamsPatch, setLlmParamsPatch] = useState({});
 
-
-
   const [dlvk, setDlvk] = useState(false);
 
+
+  // === MODELS DYNAMIC ===
+  const [modelsByHost, setModelsByHost] = useState({ openai: [], google: [], ollama: [] });
+  const [modelWarnings, setModelWarnings] = useState({});
+  const [modelsLoading, setModelsLoading] = useState(true);
+
+  const fetchModels = async (force=false) => {
+    try {
+      setModelsLoading(true);
+      const res = await fetch(`api/models${force ? '?force_refresh=true' : ''}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setModelsByHost(data.models_by_host || { openai: [], google: [], ollama: [] });
+      setModelWarnings(data.warnings || {});
+    } catch (e) {
+      console.error(e);
+      toast.error('Unable to load models list.');
+    } finally {
+      setModelsLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchModels(false); }, []);
+
+    // se i modelli cambiano, fai rispettare un modello valido per la platform corrente
+  useEffect(() => {
+    const list = modelsByHost[platform] || [];
+    if (!list.includes(model)) {
+      setModel(list[0] || '');
+    }
+  }, [modelsByHost, platform]); 
+  
+  
+  
   // seconda immagine (es. segmentazione/overlay) opzionale
   const [segmentationImage, setSegmentationImage] = useState(null);
 
@@ -107,9 +133,10 @@ const StartPage = () => {
   const handlePlatformChange = (e) => {
     const nextHost = e.target.value;
     setPlatform(nextHost);
-    const nextDefault = MODELS_BY_HOST[nextHost]?.[0] ?? '';
+    const nextDefault = (modelsByHost[nextHost] && modelsByHost[nextHost][0]) || '';
     setModel(nextDefault);
   };
+
 
   const handleModelChange = (e) => setModel(e.target.value);
 
@@ -168,7 +195,7 @@ const StartPage = () => {
 
       // mappo i vecchi campi eventuali (backward compat)
       const loadedHost = data.host ?? data.platform ?? DEFAULT_HOST;
-      const availableModels = MODELS_BY_HOST[loadedHost] || [];
+      const availableModels = modelsByHost[loadedHost] || [];
       const loadedModel = availableModels.includes(data.model) ? data.model : (availableModels[0] || '');
 
       setPlatform(loadedHost);
@@ -351,20 +378,38 @@ const StartPage = () => {
         {/* === Models (ex Task Type) SECOND === */}
         <Card title="Models" icon={<Brackets />}>
           <div className={cardStyles.radio}>
-            {MODELS_BY_HOST[platform]?.map(m => (
-              <label key={m} className={cardStyles.radio_label}>
-                <input
-                  type="radio"
-                  name="model"
-                  value={m}
-                  checked={model === m}
-                  onChange={handleModelChange}
-                />
-                {m}
-              </label>
-            )) || <span>No models available.</span>}
+            {modelsLoading ? (
+              <span>Loading models…</span>
+            ) : (modelsByHost[platform]?.length ? (
+              modelsByHost[platform].map(m => (
+                <label key={m} className={cardStyles.radio_label}>
+                  <input
+                    type="radio"
+                    name="model"
+                    value={m}
+                    checked={model === m}
+                    onChange={handleModelChange}
+                  />
+                  {m}
+                </label>
+              ))
+            ) : (
+              <span>No models available.</span>
+            ))}
+          </div>
+          {/* eventuale warning provider */}
+          {modelWarnings[platform] && (
+            <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
+              Warning {HOST_LABELS[platform]}: {modelWarnings[platform]}
+            </div>
+          )}
+          <div style={{ marginTop: 8 }}>
+            <button className={cardStyles.button} onClick={() => fetchModels(true)}>
+              Refresh models
+            </button>
           </div>
         </Card>
+
 
         <Card
           header={
@@ -431,6 +476,7 @@ const StartPage = () => {
               disabled={
                 loading ||
                 !selectedFile ||
+                !model ||
                 ((platform === 'google' || platform === 'openai') && !(
                   (platform === 'google' && googleApiKey) ||
                   (platform === 'openai' && openaiApiKey)

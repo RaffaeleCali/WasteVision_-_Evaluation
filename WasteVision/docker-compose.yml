@@ -12,15 +12,20 @@ services:
   server:
     build: ./server
     container_name: server
+    env_file:
+      - ./server/app/.env
     ports:
       - "5000:5001"
     volumes:
       - ./server/data:/app/data
     networks:
       - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # utile per OLLAMA_HOST
+
   
   ollama:
-    image: ollama/ollama:latest  
+    image: ollama/ollama:0.12.2  
     container_name: ollama
     ports:
       - 7689:11434
