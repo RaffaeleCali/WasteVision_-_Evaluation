@@ -6,7 +6,7 @@ import cardStyles from '../components/Card.module.css';
 import Card from '../components/Card';
 import PaperPrompts from '../components/PaperPrompts';
 import ConfigModal from '../components/ConfigModal';
-import { Image, ImageUp, Brackets, ScanText, Terminal, PenLine, Waypoints, MonitorCog } from 'lucide-react';
+import { Image, ImageUp, Brackets, ScanText, Terminal, PenLine, Waypoints, MonitorCog, Loader2 } from 'lucide-react';
 
 // === Platform → Models mapping ===
 const HOST_LABELS = {
@@ -214,22 +214,26 @@ const StartPage = () => {
     }
   };
 
-  const loadDefaultPrompt = () => {
-    // prompt generico sensato per task multimodale
-    const generic = 'Analyze the uploaded image and provide a concise, structured explanation of the key elements you detect. If food waste is visible, estimate the percentage of waste and list items considered waste.';
-    setPrompt(generic);
-  };
-
   //img  upload
   const handleSelectPrompt = (p) => {
     setSelectedPromptName(p.label);
     setPrompt(p.text); // mostra il testo del prompt scelto nella textarea
   };
 
+  const getDetectBlockers = () => {
+    const issues = [];
+    if (loading) issues.push('Working…');
+    if (!selectedFile) issues.push('Upload an image');
+    if (!model) issues.push('Select a model');
+    if (!prompt) issues.push('Select or add a prompt');
+    if (platform === 'google' && !googleApiKey) issues.push('Enter your Google API key');
+    if (platform === 'openai' && !openaiApiKey) issues.push('Enter your OpenAI API key');
+    return issues;
+  };
 
   const handleDetect = async () => {
     if (!selectedFile) {
-      toast.error("Please upload an image first.");
+      toast.error("Please upload an image");
       return;
     }
 
@@ -249,7 +253,7 @@ const StartPage = () => {
       dlvk: dlvk || false,
       params: llmParamsPatch,   
     }));
-    //setLoading(true);
+    setLoading(true);
     try {
       const res = await fetch('/api/predict', {
         method: 'POST',
@@ -470,28 +474,53 @@ const StartPage = () => {
             </label>
 
 
-            <button
-              className={cardStyles.button}
-              onClick={handleDetect}
-              disabled={
-                loading ||
-                !selectedFile ||
-                !model ||
-                ((platform === 'google' || platform === 'openai') && !(
-                  (platform === 'google' && googleApiKey) ||
-                  (platform === 'openai' && openaiApiKey)
-                ))
-              }
-            >
-              {loading ? 'Detecting…' : 'Detect'}
-            </button>
+            {(() => {
+              const blockers = getDetectBlockers();
+              const disabled = blockers.length > 0 && blockers[0] !== 'Working…';
+              const title = blockers[0] || undefined;
+              return (
+                <>
+                  {disabled && !loading && (
+                    <div
+                      className={`${cardStyles.hintDisabled} mt-2`}
+                      role="status"
+                      aria-live="polite"
+                      style={{ marginTop: 6, color: '#b7410e' }}
+                    >
+                      <div className="flex flex-col gap-1">
+                        {blockers.map((msg, i) => (
+                          <div key={i}>{msg}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    className={`${cardStyles.button} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    onClick={handleDetect}
+                    disabled={disabled}
+                    title={title}
+                    aria-busy={loading ? 'true' : 'false'}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className={cardStyles.spin} size={16} style={{ marginRight: 6 }} />
+                        Detecting…
+                      </>
+                    ) : 'Detect'}
+                  </button>
+                  
+                </>
+              );
+            })()}
 
-            <button className={cardStyles.button} onClick={saveCurrentConfig}>
+            
+            {/*<button className={cardStyles.button} onClick={saveCurrentConfig}>
               Save current config
             </button>
             <button className={cardStyles.button} onClick={loadLastConfig}>
               Load last config
-            </button>
+            </button>*/}
+
             <ConfigModal value={llmParams} onChange={handleParamsPatch}/>
           </div>
         </Card>
