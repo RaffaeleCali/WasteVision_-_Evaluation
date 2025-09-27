@@ -140,7 +140,7 @@
   - name: Wait for all pods to be Ready
     ansible.builtin.command: >
       kubectl wait --for=condition=Ready pod --all
-      -n {{ kube_ns }} --timeout=380s
+      -n {{ kube_ns }} --timeout=330s
     when: pod_list.stdout != ""
     become: false
 
