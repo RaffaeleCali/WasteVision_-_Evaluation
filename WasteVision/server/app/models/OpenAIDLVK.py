@@ -34,13 +34,13 @@ class OpenAIYoloModel(BaseMultimodalModel):
 
         
         # 3) Messaggi
-        sys_msg = {"role": "system", "content": _SYS_PROMPT}
+        sys_msg = {"role": "system", "content": prompt}
 
         user_content = [
             {
                 "type": "text",
                 "text": (
-                    f"Detected objects:\n{format_detected(detected)}\n\n{prompt}"
+                    f"Detected objects:\n{format_detected(detected)}\n\n"
                 ),
             },
             {

@@ -28,10 +28,9 @@ class OllamaYoloModel(BaseMultimodalModel):
         ann_b64 = yolo_res.get("image")
 
         full_prompt = (
-            f"{_SYS_PROMPT}\n\n"
+            f"{prompt}\n\n"
             "Detected objects:\n"
             f"{format_detected(detected)}\n\n"
-            f"{prompt}"
         )
         
         print("OLLAMADLVK: full_prompt", full_prompt, flush=True)
@@ -54,6 +53,10 @@ class OllamaYoloModel(BaseMultimodalModel):
         try:
             resp = requests.post(self.api_url, json=payload, timeout=520)
             resp.raise_for_status()
-            return resp.json()["response"].strip()
+            return {
+                "text": resp.json()["response"].strip(),          # risposta LLM
+                "segmented_image": ann_b64,     # <-- base64 dell'overlay YOLO
+                # "detection_image": ...        
+            }
         except Exception as e:
             return f"[Ollama error] {e}"

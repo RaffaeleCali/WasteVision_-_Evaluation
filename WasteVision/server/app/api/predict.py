@@ -28,6 +28,7 @@ async def predict_image(image: UploadFile = File(...), config_json: str = Form(.
     try:
         model = get_model_from_config(cfg)
         prompt = cfg.prompt or _SYS_PROMPT
+        #print("prompt:", prompt, flush=True)
         keys_selected =  normalize_params(cfg.host, cfg.params)
         print("selected keys for LLM parameters:", keys_selected, flush=True)
         provider_params = normalize_params(cfg.host, cfg.params)

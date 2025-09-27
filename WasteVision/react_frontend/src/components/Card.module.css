@@ -49,7 +49,7 @@
 }
 
 .content {
-    @apply flex flex-col justify-start text-gray-700 text-sm;
+    @apply flex flex-col justify-start text-gray-700 text-sm min-h-0;
 }
 
 .content .image {
@@ -131,3 +131,27 @@
 .slider_center {
     @apply mt-2 flex items-center gap-2;
 }
+/* contenitore verticale scrollabile per l'elenco modelli */
+/* contenitore verticale scrollabile per l'elenco modelli */
+.scrollColumn {
+    @apply flex flex-col gap-2 overflow-y-auto h-40 md:h-44 pr-2; /* ~10–11rem di altezza visibile */
+}
+
+
+/* testo di stato */
+.modelsHint {
+    @apply opacity-60 text-sm;
+}
+
+/* tronca i nomi modello lunghi */
+.ellipsis {
+    @apply truncate block;
+}
+
+/* stile dei label anche quando NON sono dentro .radio */
+.content .radio .radio_label,
+.scrollColumn .radio_label {
+    @apply py-3 border border-[#6466F1] rounded-3xl flex items-center justify-start gap-2 px-4;
+}
+
+

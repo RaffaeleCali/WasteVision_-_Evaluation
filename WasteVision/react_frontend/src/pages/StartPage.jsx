@@ -377,11 +377,11 @@ const StartPage = () => {
 
         {/* === Models (ex Task Type) SECOND === */}
         <Card title="Models" icon={<Brackets />}>
-          <div className={cardStyles.radio}>
+          <div className={cardStyles.scrollColumn}>
             {modelsLoading ? (
-              <span>Loading models…</span>
+              <span className={cardStyles.modelsHint}>Loading models…</span>
             ) : (modelsByHost[platform]?.length ? (
-              modelsByHost[platform].map(m => (
+              modelsByHost[platform].map((m) => (
                 <label key={m} className={cardStyles.radio_label}>
                   <input
                     type="radio"
@@ -390,14 +390,14 @@ const StartPage = () => {
                     checked={model === m}
                     onChange={handleModelChange}
                   />
-                  {m}
+                  <span className={cardStyles.ellipsis}>{m}</span>
                 </label>
               ))
             ) : (
-              <span>No models available.</span>
+              <span className={cardStyles.modelsHint}>No models available.</span>
             ))}
           </div>
-          {/* eventuale warning provider */}
+
           {modelWarnings[platform] && (
             <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
               Warning {HOST_LABELS[platform]}: {modelWarnings[platform]}
